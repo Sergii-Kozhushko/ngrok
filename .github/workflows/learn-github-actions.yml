@@ -1,19 +1,16 @@
-name: learn-github-actions
+name: test cd-ci
 run-name: ${{ github.actor }} is learning GitHub Actions
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 jobs:
-  check-bats-version:
+
+  build-gradle-project:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Run one-line script
-        run: echo Hello, world!
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '14'
-      - run: npm install -g bats
-      - run: bats -v
+      - name: Checkout project sources
+        uses: actions/checkout@v3
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Run build with Gradle Wrapper
+        run: ./gradlew build
