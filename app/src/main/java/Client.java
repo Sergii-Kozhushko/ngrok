@@ -1,92 +1,3 @@
-//public class Client {
-//
-//    private static final int clientPort = 8082; // рабочий порт клиента
-//
-//    private static final int servicePort = 2222; // порт сервиса, который мы проксируем
-//
-//    public static void main(String[] args) {
-//        try (ServerSocket serverSocket = new ServerSocket(clientPort)) {
-//            System.out.println("Client started!");
-//            while (true) {
-//                Socket socket = serverSocket.accept();
-//                // пришел запрос на тунель
-//                System.out.print("-> Server connected to client. ");
-//                System.out.println(" Host: " + socket.getLocalAddress() + ":" + socket.getPort());
-//
-//                try (
-//                        // поток чтения запроса от сервера
-//                        BufferedReader reader = new BufferedReader(
-//                                new InputStreamReader(socket.getInputStream(),
-//                                        StandardCharsets.UTF_8));
-//                        //  поток ответа серверу
-//                        PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)
-//                ) {
-//
-//                    // ждем входящие данные
-//                    while (!reader.ready()) ;
-//                    // читаем запрос
-//                    StringBuilder request = new StringBuilder();
-//                    while (reader.ready()) {
-//                        request.append(reader.readLine());
-//
-//                    }
-//                    System.out.println(request);
-//                    // отправить полученный запрос на локально запущенный сервис, который мы проксируем
-//                    // и получить ответ
-//                    sendRequestToService(request);
-//                    // вернуть ответ серверу
-//
-//                    writer.println("HTTP/1.1 200 OK");
-//                    writer.println("Content-Type: text/html; charset=utf-8");
-//                    writer.println();
-//                    writer.flush();
-//
-//
-//                }
-//            }
-//
-//        } catch (
-//                IOException ex) {
-//            ex.printStackTrace();
-//        }
-//    }
-//
-//    private static StringBuilder sendRequestToService(StringBuilder request) {
-//        StringBuilder response = new StringBuilder();
-//
-//        try (
-//                Socket socket = new Socket("localhost", servicePort);
-//                // поток для отправки запроса на проксируемый сервис
-//                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-//                //  поток для получения ответа
-//                //DataInputStream in = new DataInputStream(socket.getInputStream());
-//                BufferedReader in = new BufferedReader(
-//                        new InputStreamReader(socket.getInputStream(),
-//                                StandardCharsets.UTF_8));
-//        ) {
-//            out.print(request);
-//            out.flush();
-//
-//            while (!in.ready()) ;
-//
-//            while (in.ready()) {
-//                response.append(in.readLine());
-//            }
-//            System.out.println("Client got response from proxied service");
-//            System.out.println(response);
-//            return response;
-//
-//
-//        } catch (
-//                IOException ex) {
-//            ex.printStackTrace();
-//        }
-//        return response;
-//
-//    }
-//
-//}
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -194,10 +105,6 @@ public class Client {
         }
         return response;
     }
-
-
-
-
 }
 
 
