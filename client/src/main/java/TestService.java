@@ -12,7 +12,7 @@ public class TestService {
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(testServicePort)) {
-            System.out.println("Test Service started!");
+            System.out.println("Test Service started at localhost:" + testServicePort);
             while (true) {
                 Socket socket = serverSocket.accept();
                 // пришел запрос на тунель
