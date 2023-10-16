@@ -1,13 +1,17 @@
-import java.io.*;
-import java.net.ConnectException;
-import java.net.ServerSocket;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.net.UnknownHostException;
 
 public class Client {
 
     private static final int clientPort = 8082;
     private static int servicePort = 2222;
+    private static final String serverHost = "localhost";
+    private static final int serverPort = 8082;
+    private static boolean running = true;
 
     public static void main(String[] args) {
         // аргумент строки запуска -service-port=номер_порта сервиса
@@ -16,84 +20,92 @@ public class Client {
                 servicePort = Integer.parseInt(arg.substring("-service-port=".length()));
             }
         }
-        try {
-            ServerSocket serverSocket = new ServerSocket(clientPort);
-            System.out.println("Client started!");
-            while (true) {
-                Socket client = serverSocket.accept();
-                System.out.print("New request from server. ");
-                System.out.println(" Host: " + client.getLocalAddress() + ":" + client.getPort());
-                // Создаем поток для обработки запроса
-                new ClientHandler(client).start();
+
+        try  {
+            Socket socket = new Socket(serverHost, serverPort);
+            PrintWriter serverOut = new PrintWriter(socket.getOutputStream());
+            BufferedReader serverIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            serverOut.print("HTTP " + servicePort +"\n");
+            serverOut.flush();
+            String line;
+            StringBuilder request = new StringBuilder();
+            while (!serverIn.ready()) ;
+            String serverReply = serverIn.readLine();
+
+            // сервер прислал ошибку
+            if (serverReply.split(" ")[0].equals("ERROR")) {
+                System.out.println(serverReply.substring("ERROR ".length()));
+                running = false;
+            } else {
+                String link = serverReply.split(" ")[1];
+                System.out.println("Link for user requests: http://localhost:" + servicePort + " -> " + link);
             }
 
-        } catch (IOException e) {
+            while (running) {
+                while (!serverIn.ready()) ;
+                while ((line = serverIn.readLine()) != null && !line.isEmpty()) {
+                    request.append(line).append("\r\n");
+                }
+                System.out.println("Client got message from server: \n" + request);
+                // получить номер юзера
+                String userNumber = request.toString().split("\r\n")[0].split(" ")[1];
+                String message = request.toString().substring(("USER " + userNumber+"\r\n").length());
+
+
+                // переслать полученное сообщение сервису и получить ответ
+                StringBuilder responseFromService = exchangePacketsWithService(message);
+
+                System.out.println("Client got response from service:\n" + responseFromService);
+
+                // переслать ответ сервиса серверу
+                String response = "USER " + userNumber + "\r\n" + responseFromService + "\n";
+                serverOut.print(response);
+                serverOut.flush();
+
+
+
+            }
+
+        } catch (UnknownHostException e) {
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            System.out.println("Server is not reachable on " + serverHost + ":" + serverPort);
+            e.printStackTrace();
         }
     }
 
-    static class ClientHandler extends Thread {
-        private Socket serverSocket;
 
-        // Конструктор с параметром сокета
-        public ClientHandler(Socket client) {
-            this.serverSocket = client;
-        }
 
-        public void run() {
-            try {
-                // Получаем входной поток для чтения данных от сервера
-                BufferedReader input = new BufferedReader(
-                        new InputStreamReader(serverSocket.getInputStream(),
-                                StandardCharsets.UTF_8));
 
-                // читаем запрос от сервера и сразу передаем запрос сервису
-                Socket serviceSocket = new Socket("localhost", servicePort);
-                OutputStream serviceOutStream = serviceSocket.getOutputStream();
+    private static StringBuilder exchangePacketsWithService(String request) {
+        StringBuilder response = new StringBuilder();
+        try
 
-                String line;
+        {
+            Socket socket = new Socket("localhost", servicePort);
+            // поток для отправки запроса на сервис
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                while (!input.ready()) ;
-                while (input.ready()) {
-                    line = input.readLine();
-                    System.out.println(line);
-                    serviceOutStream.write(line.getBytes());
-                }
-//                while ((line = input.readLine()) != null && !line.isEmpty()) {
-//                    System.out.println(line);
-//                    serviceOutStream.write(line.getBytes());
-//                }
-                serviceOutStream.flush();
+            //отправить запрос сервису
+            out.print(request + "\n");
+            out.flush();
 
-                // читаем ответ от сервиса
-                InputStream serviceInputStream = serviceSocket.getInputStream();
-                BufferedReader serviceResponseReader = new BufferedReader(new InputStreamReader(serviceInputStream));
-
-                // отправляем ответ обратно серверу
-                OutputStream output = serviceSocket.getOutputStream();
-                String responseLine;
-                while ((responseLine = serviceResponseReader.readLine()) != null) {
-                    output.write(responseLine.getBytes());
-                }
-                output.flush();
-
-                // Закрываем потоки и соединение
-                output.close();
-                input.close();
-                serviceInputStream.close();
-                serviceSocket.close();
-                serviceResponseReader.close();
-                System.out.println("Client thread is closed");
-            } catch (ConnectException e) {
-                System.out.println("Service is not available at localhost:" + servicePort);
-            } catch (IOException e) {
-                e.printStackTrace();
+            // принимаем ответ
+            String line;
+            while ((line = in.readLine()) != null ) {
+                response.append(line).append("\r\n");
             }
+
+        } catch (
+                IOException ex) {
+            ex.printStackTrace();
         }
-
+        return response;
     }
+
+
+
+
 }
-
-
-
-
