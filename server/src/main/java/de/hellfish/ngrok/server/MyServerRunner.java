@@ -77,6 +77,10 @@ public class MyServerRunner implements CommandLineRunner {
                         sendClientMessage("LINK " + generatedLink, clientSocket);
                         // где-то надо сохранить что для запросов сервиса 2222 отрабатывают запросы юзеров 9001
                         links.put(methodAndPort.get().getPort(), generatedLink);
+                        UserHttpServer userHttpServer =
+                                new UserHttpServer(tempUserRequestsPort, clientSocket, userConnections);
+
+                        userHttpServer.startServer();
                         logger.info("Server is listening on users on: " + methodAndPort.get());
                     }
 
