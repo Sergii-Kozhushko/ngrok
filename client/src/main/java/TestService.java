@@ -48,14 +48,6 @@ public class TestService {
                             "test";
 
                     writer.write(reply200);
-
-
-                    // отправить ответ клиенту
-//                    writer.print("HTTP/1.1 418\n");
-//                    writer.print("Content-Type: text/html; charset=utf-8\n");
-//                    writer.write("Content-Length: 0\n\n");
-
-
                     writer.flush();
                     // здесь надо соедениться с клиентом ngrok и передать ему запрос
 

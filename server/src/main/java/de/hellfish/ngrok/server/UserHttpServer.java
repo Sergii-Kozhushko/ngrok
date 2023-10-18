@@ -60,18 +60,39 @@ public class UserHttpServer extends Thread {
 
                 executors.submit(() -> {
                     try {
+                        // читаем запрос побайтово
+                        // readUserRequestByte(Socket socket)
                         BufferedReader userInputStream = new BufferedReader(new InputStreamReader(userSocket.getInputStream()));
                         //  читаем содержимое сообщения юзера
                         String line;
                         StringBuilder userRequest = new StringBuilder();
-                        while ((line = userInputStream.readLine()) != null && !line.isEmpty()) {
+                        int contentLength = 0;
+                        line = userInputStream.readLine();
+                        while (line  != null && !line.isEmpty()) {
                             userRequest.append(line).append("\r\n");
+                            if (line.contains("Content-Length")) {
+                                try {
+                                    contentLength = Integer.parseInt(line.split(" ")[1]);
+                                } catch (NumberFormatException ignored) {
+
+                                }
+                            }
+                            line = userInputStream.readLine();
                         }
-                        logger.info("User handler got request from " +
-                                userSocket.getLocalAddress() + ":" + userSocket.getPort() + "\n" + "*" + userRequest + "*");
+
+                        // читаем тело
+                        if (contentLength > 0) {
+                            //readBody(contentLength, userSocket);
+
+                        }
+
+
+
                         if (userRequest.length() == 0) {
                             this.interrupt();
                         }
+                        logger.info("User handler got request from " +
+                                userSocket.getLocalAddress() + ":" + userSocket.getPort() + "\n" + "*" + userRequest + "*");
 
                         // переслать полученный юзерский запрос клиенту
                         // добавить в начале USER [ПОРТ] чтобы различать какой пакет какому юзеру вернуть
@@ -109,6 +130,37 @@ public class UserHttpServer extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String readBody(int contentLength, Socket socket) {
+        byte[] buffer = new byte[contentLength];
+        try {
+            InputStream inputStream = socket.getInputStream();
+
+            int n = 1024; // Кількість байт, які ви хочете прочитати
+
+
+            int bytesRead = 0;
+            int offset = 0;
+
+            while (bytesRead < n) {
+                int read = inputStream.read(buffer, offset, n - bytesRead);
+                if (read == -1) {
+                    break;
+                }
+                bytesRead += read;
+                offset += read;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating stream", e);
+        }
+        String result;
+        try {
+            result = new String(buffer, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Error converting body to string", e);
+        }
+        return result;
     }
 
 }

@@ -18,23 +18,21 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
-public class MyServerRunner implements CommandLineRunner {
-    private static final int userToServerPort = 8081;
+public class ServerRunner implements CommandLineRunner {
 
     private static final int clientToServerPort = 8082;
 
     private boolean isRunning = true;
 
     @Autowired
-    public static final Logger logger = LoggerFactory.getLogger(MyServerRunner.class);
+    public static final Logger logger = LoggerFactory.getLogger(ServerRunner.class);
 
     // какие клиенты какие порты заняли
-    private Map<ClientMethodAndPort, Socket> clientConnections = new HashMap<>();
+    private final Map<ClientMethodAndPort, Socket> clientConnections = new HashMap<>();
 
     // список входящих соединений от юзеров
-    private Map<Integer, Socket> userConnections = new HashMap<>();
+    private final Map<Integer, Socket> userConnections = new HashMap<>();
 
-    private Map<Integer, String> links = new HashMap<>();
 
     @Override
     public void run(String... args) throws Exception {
@@ -64,9 +62,7 @@ public class MyServerRunner implements CommandLineRunner {
                         sendClientMessage(errorMessage, clientSocket);
                     } else {
 
-                        //ClientHandler clientHandler = new ClientHandler(clientSocket, userConnections);
                         clientConnections.put(methodAndPort.get(), clientSocket);
-                        //clientHandler.start();
                         logger.info("New client successfully connected with proxy request " + methodAndPort.get());
 
                         // TODO сгенерировать ссылку с субдоменом для запросов юзера типа http://tcp1.myngrok.com
@@ -75,8 +71,6 @@ public class MyServerRunner implements CommandLineRunner {
                         int tempUserRequestsPort = 9001;
                         String generatedLink = "http://localhost:" + tempUserRequestsPort;
                         sendClientMessage("LINK " + generatedLink, clientSocket);
-                        // где-то надо сохранить что для запросов сервиса 2222 отрабатывают запросы юзеров 9001
-                        links.put(methodAndPort.get().getPort(), generatedLink);
                         UserHttpServer userHttpServer =
                                 new UserHttpServer(tempUserRequestsPort, clientSocket, userConnections);
 
