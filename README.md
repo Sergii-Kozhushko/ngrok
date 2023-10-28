@@ -17,4 +17,9 @@ User can be browser, postman, curl and so on.
 2. type http://localhost:9001/index.html in firefox or postman
 3. You got 200 Response and body "test". That response comes from TestService app on your localhost
 
-ClientOld accepts command-line parameter -port-number=8080. Port-number is a port of Service
+Client accepts command-line parameter -port-number=8080. Port-number is a port of Service
+
+Сервер принимает запросы юзеров по вайлдкарду, туда попадают все запросы, включая субдомены
+перепаковывает их в свой формат, сериализаует
+
+Сервtр общается с клиентом посредством запроса типа server.ngrok.com
