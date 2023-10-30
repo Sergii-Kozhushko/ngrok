@@ -1,9 +1,7 @@
 package de.hellfish.ngrok.server;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -17,57 +15,43 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Component
 public class ServerRunner implements CommandLineRunner {
 
     private static final int clientToServerPort = 8082;
-
     private boolean isRunning = true;
 
-    @Autowired
-    public static final Logger logger = LoggerFactory.getLogger(ServerRunner.class);
-
-    // какие клиенты какие порты заняли
     private final Map<ClientMethodAndPort, Socket> clientConnections = new HashMap<>();
-
-    // список входящих соединений от юзеров
     private final Map<Integer, Socket> userConnections = new HashMap<>();
 
 
     @Override
     public void run(String... args) throws Exception {
         if (args.length > 0) {
-            logger.info("first command-line parameter: '{}'", args[0]);
+            log.info("first command-line parameter: '{" + args[0] + "}'" );
         }
 
-        // слушатель запросов всех клиентов на 8082
         try (ServerSocket clientServerSocket = new ServerSocket(clientToServerPort);
         ) {
-            logger.info("Server is listening on clients on port: " + clientToServerPort);
+            log.info("Server is listening on clients on port: " + clientToServerPort);
             Socket clientSocket;
             while (isRunning) {
 
                 clientSocket = clientServerSocket.accept();
-                // появился новый клиент!
-                logger.info("New client connected from " + clientSocket.getLocalAddress() + ":" + clientSocket.getPort());
+                // new client!
+                log.info("New client connected from " + clientSocket.getLocalAddress() + ":" + clientSocket.getPort());
 
-                // при установке соединения клиент передает строку вида HTTP 2222, с номером порта локального сервиса,
-                // который надо проксить
                 Optional<ClientMethodAndPort> methodAndPort = getServicePortAndMethodFromClient(clientSocket);
-                // добавить нового клиента в мапу клиентов
                 if (methodAndPort.isPresent()) {
                     if (clientConnections.containsKey(methodAndPort.get())) {
                         String errorMessage = "ERROR " + methodAndPort.get() + " is already in use";
-                        logger.warn(errorMessage);
+                        log.warn(errorMessage);
                         sendClientMessage(errorMessage, clientSocket);
                     } else {
-
                         clientConnections.put(methodAndPort.get(), clientSocket);
-                        logger.info("New client successfully connected with proxy request " + methodAndPort.get());
+                        log.info("New client successfully connected with proxy request " + methodAndPort.get());
 
-                        // TODO сгенерировать ссылку с субдоменом для запросов юзера типа http://tcp1.myngrok.com
-                        // пока просто берем какой то порт 9001..9010 и генерим ссылку типа http://localhost:9001
-                        // TODO сделать метод, который выбирает из пула из свободных портов
                         int tempUserRequestsPort = 9001;
                         String generatedLink = "http://localhost:" + tempUserRequestsPort;
                         sendClientMessage("LINK " + generatedLink, clientSocket);
@@ -75,17 +59,15 @@ public class ServerRunner implements CommandLineRunner {
                                 new UserHttpServer(tempUserRequestsPort, clientSocket, userConnections);
 
                         userHttpServer.startServer();
-                        logger.info("Server is listening on users on: " + methodAndPort.get());
+                        log.info("Server is listening on users on: " + methodAndPort.get());
                     }
-
                 } else {
-                    logger.info("Received wrong protocol and port value");
+                    log.info("Received wrong protocol and port value");
                     sendClientMessage("ERROR Didn't receive service protocol and port", clientSocket);
                 }
             }
-
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error opening server socket", e);
         }
     }
 
@@ -95,10 +77,9 @@ public class ServerRunner implements CommandLineRunner {
             pw.write(message + "\n");
             pw.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error sending message to Client", e);
         }
     }
-
 
     private Optional<ClientMethodAndPort> getServicePortAndMethodFromClient(Socket clientSocket) {
         try {
@@ -115,9 +96,8 @@ public class ServerRunner implements CommandLineRunner {
                 return Optional.of(mp);
             }
         } catch (IOException e) {
-            new RuntimeException(e);
+            log.error("Error reading init data from client", e);
         }
         return Optional.empty();
     }
-
 }

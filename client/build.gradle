@@ -6,7 +6,6 @@ plugins {
 }
 
 
-
 java {
     sourceCompatibility = '17'
 }
@@ -17,16 +16,11 @@ configurations {
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation project(':utils')
+    implementation project(path: ':utils')
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    implementation 'commons-io:commons-io:2.14.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

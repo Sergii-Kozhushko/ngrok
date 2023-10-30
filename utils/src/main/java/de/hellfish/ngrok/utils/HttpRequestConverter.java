@@ -5,26 +5,28 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HttpRequestConverter {
 
     public static HttpRequest convert(HttpServletRequest request) {
-        HttpRequest result = new HttpRequest();
         Enumeration<String> headerNames = request.getHeaderNames();
+        Map<String, String> headers = new HashMap<>();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             String headerValue = request.getHeader(headerName);
-            result.addHeader(headerName, headerValue);
+            headers.put(headerName, headerValue);
         }
-        result.setMethod(request.getMethod());
-        result.setUrl(request.getRequestURI());
 
+        byte[] body;
         try {
             InputStream inputStream = request.getInputStream();
-            result.setBody(IOUtils.toByteArray(inputStream));
+            body = IOUtils.toByteArray(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return result;
+        return new HttpRequest(headers, request.getMethod(),
+                request.getRequestURI(), body);
     }
 }

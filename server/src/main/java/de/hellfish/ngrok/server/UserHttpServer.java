@@ -2,8 +2,7 @@ package de.hellfish.ngrok.server;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -12,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Slf4j
 @Getter
 @Setter
 public class UserHttpServer extends Thread {
@@ -19,11 +19,7 @@ public class UserHttpServer extends Thread {
     private Socket clientSocket; //соединение клиента, которое инициировало принимать запросы  юзеров на этот порт
     private boolean running = true;
     private ServerSocket userServerSocket;
-
     private Map<Integer, Socket> userConnections; // список юзеров, которые установили соединение
-
-    public static final Logger logger = LoggerFactory.getLogger(UserHttpServer.class);
-
     ExecutorService executors = Executors.newFixedThreadPool(5);
 
     public UserHttpServer(int userPort, Socket clientSocket, Map<Integer, Socket> userConnections) {
@@ -37,8 +33,7 @@ public class UserHttpServer extends Thread {
             userServerSocket = new ServerSocket(userPort);
             this.start();
         } catch (IOException e) {
-            logger.error(userPort + " is busy. Users Server can't run");
-            e.printStackTrace();
+            log.error(userPort + " is busy. Users Server can't run", e);
         }
     }
 
@@ -52,18 +47,13 @@ public class UserHttpServer extends Thread {
         try {
             // Socket userSocket;
             while (running) {
-                //  получили сообщение от юзера
                 var userSocket = userServerSocket.accept();
                 userConnections.put(userSocket.getPort(), userSocket);
-                logger.info("New user connected from " + userSocket.getLocalAddress() + ":" + userSocket.getPort());
-
+                log.info("New user connected from " + userSocket.getLocalAddress() + ":" + userSocket.getPort());
 
                 executors.submit(() -> {
                     try {
-                        // читаем запрос побайтово
-                        // readUserRequestByte(Socket socket)
                         BufferedReader userInputStream = new BufferedReader(new InputStreamReader(userSocket.getInputStream()));
-                        //  читаем содержимое сообщения юзера
                         String line;
                         StringBuilder userRequest = new StringBuilder();
                         int contentLength = 0;
@@ -80,7 +70,7 @@ public class UserHttpServer extends Thread {
                             line = userInputStream.readLine();
                         }
 
-                        // читаем тело
+                        // read body
                         if (contentLength > 0) {
                             //readBody(contentLength, userSocket);
 
@@ -91,18 +81,16 @@ public class UserHttpServer extends Thread {
                         if (userRequest.length() == 0) {
                             this.interrupt();
                         }
-                        logger.info("User handler got request from " +
+                        log.info("User handler got request from " +
                                 userSocket.getLocalAddress() + ":" + userSocket.getPort() + "\n" + "*" + userRequest + "*");
 
-                        // переслать полученный юзерский запрос клиенту
-                        // добавить в начале USER [ПОРТ] чтобы различать какой пакет какому юзеру вернуть
                         PrintWriter writer = new PrintWriter(clientSocket.getOutputStream());
                         writer.write("USER " + userSocket.getPort() + "\r\n" + userRequest);
                         writer.write("\n");
 
                         writer.flush();
 
-                        // прочитать ответ клиента и отправить юзеру
+                        // reda response from clinet and send to user
                         BufferedReader clientReadStream =
                                 new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                         StringBuilder clientResponse = new StringBuilder();
@@ -116,19 +104,16 @@ public class UserHttpServer extends Thread {
                                 clientResponse.toString().substring(("USER " + userNumber + "\r\n").length());
                         PrintWriter userWriteStream = new PrintWriter(userSocket.getOutputStream());
 
-
                         userWriteStream.write(clientResponsePure);
                         userWriteStream.flush();
                         userWriteStream.close();
-
-
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.error("Socket error on server", e);
                     }
                 });
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Socket error on server", e);
         }
     }
 
@@ -137,9 +122,7 @@ public class UserHttpServer extends Thread {
         try {
             InputStream inputStream = socket.getInputStream();
 
-            int n = 1024; // Кількість байт, які ви хочете прочитати
-
-
+            int n = 1024;
             int bytesRead = 0;
             int offset = 0;
 
@@ -162,18 +145,4 @@ public class UserHttpServer extends Thread {
         }
         return result;
     }
-
 }
-
-// *** рабочий тест
-//                        PrintWriter writer2 = new PrintWriter(userSocket.getOutputStream());
-//                        String reply200 = "HTTP/1.1 200 OK\r\n" +
-//                                "Date: Fri, 14 Oct 2023 10:00:00 GMT\r\n" +
-//                                "Server: Apache/2.4.41 (Unix)\r\n" +
-//                                "Content-Length: 4\r\n" +
-//                                "Content-Type: text/plain; charset=utf-8" +
-//                                "\r\n\r\n" +
-//                                "test";
-//                        writer2.write(reply200);
-//                        writer2.flush();
-//***
