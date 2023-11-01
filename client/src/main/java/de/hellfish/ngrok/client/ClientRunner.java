@@ -1,5 +1,12 @@
 package de.hellfish.ngrok.client;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.hellfish.ngrok.utils.HttpRequestConverter;
+import de.hellfish.ngrok.utils.HttpRequestSerializer;
+import de.hellfish.ngrok.utils.MyHttpRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -10,6 +17,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @Component
 @Slf4j
@@ -45,33 +55,71 @@ public class ClientRunner implements CommandLineRunner {
                 running = false;
             } else {
                 String link = serverReply.split(" ")[1];
-                log.info("Link for user requests: " + servicePort + " -> " + link);
+                log.info("Link for user requests: http://localhost:" + servicePort + " -> " + link);
             }
 
             while (running) {
-                while (!serverIn.ready()) ;
-                while ((line = serverIn.readLine()) != null && !line.isEmpty()) {
-                    request.append(line).append("\r\n");
-                }
-                System.out.println("Client got message from server: \n" + request);
-                // get user number
-                String userNumber = request.toString().split("\r\n")[0].split(" ")[1];
-                String message = request.substring(("USER " + userNumber+"\r\n").length());
+                // read serialized http request from server
+                MyHttpRequest userRequest = HttpRequestSerializer.readFromInputStream(socket);
+                log.info("Client received new user request: " + userRequest.toString());
+                var response = sendRequestToService(userRequest);
+                // send serialized response to server
+                JsonFactory jsonFactory = new JsonFactory();
+                jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+                jsonFactory.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+                ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
 
-                // send request to service and wait for reply
-                StringBuilder responseFromService = exchangePacketsWithService(message);
+                objectMapper.writeValue(socket.getOutputStream(), response);
 
-                log.info("Client got response from service:\n" + responseFromService);
 
-                // send request back to server
-                String response = "USER " + userNumber + "\r\n" + responseFromService + "\n";
-                serverOut.print(response);
-                serverOut.flush();
+//                while (!serverIn.ready()) ;
+//                while ((line = serverIn.readLine()) != null && !line.isEmpty()) {
+//                    request.append(line).append("\r\n");
+//                }
+//                System.out.println("Client got message from server: \n" + request);
+//                // get user number
+//                String userNumber = request.toString().split("\r\n")[0].split(" ")[1];
+//                String message = request.substring(("USER " + userNumber+"\r\n").length());
+//
+//                // send request to service and wait for reply
+//                StringBuilder responseFromService = exchangePacketsWithService(message);
+//
+//                log.info("Client got response from service:\n" + responseFromService);
+//
+//                // send request back to server
+//                String response = "USER " + userNumber + "\r\n" + responseFromService + "\n";
+//                serverOut.print(response);
+//                serverOut.flush();
             }
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             log.error("Server is not reachable on " + serverHost + ":" + serverPort, e);
+        }
+    }
+
+    private HttpResponse<String> sendRequestToService(MyHttpRequest userRequest) {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest serviceRequest = HttpRequestConverter.
+                convertMyToHttp(userRequest, "http://localhost:" + servicePort);
+
+        try {
+            // Отправка запроса и получение ответа
+            HttpResponse<String> response = client.send(serviceRequest, HttpResponse.BodyHandlers.ofString());
+
+            // Обработка ответа
+            int statusCode = response.statusCode();
+            String responseBody = response.body();
+
+            System.out.println("Status Code: " + statusCode);
+            System.out.println("Response Body:");
+            System.out.println(responseBody);
+            return response;
+
+        } catch (Exception e) {
+            log.error("Service not available", e);
+            return null;
         }
     }
 

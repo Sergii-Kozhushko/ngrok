@@ -1,23 +1,27 @@
 package de.hellfish.ngrok.utils;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import java.util.Arrays;
 import java.util.Map;
 
 
 @Getter
-@RequiredArgsConstructor
-public final class HttpRequest {
+@NoArgsConstructor
+@AllArgsConstructor
+public final class MyHttpRequest {
 
-    private final Map<String, String> headers;
-    private final String method;
-    private final String url;
-    private final byte[] body;
+    private Map<String, String> headers;
+    private String method;
+    private String url;
+    private String uri;
+    private byte[] body;
 
     @Override
     public String toString() {
-        return "HttpRequest{" +
+        return "MyHttpRequest{" +
                 "headers=" + headers +
                 ", method='" + method + '\'' +
                 ", url='" + url + '\'' +

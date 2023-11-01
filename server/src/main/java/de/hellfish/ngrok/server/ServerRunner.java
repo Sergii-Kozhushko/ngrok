@@ -1,7 +1,9 @@
 package de.hellfish.ngrok.server;
 
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,7 @@ import java.util.Optional;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ServerRunner implements CommandLineRunner {
 
     private static final int clientToServerPort = 8082;
@@ -26,10 +29,16 @@ public class ServerRunner implements CommandLineRunner {
     private final Map<Integer, Socket> userConnections = new HashMap<>();
 
 
+    private final Clients clientList;
+
+    @Value("${server.port}")
+    private int userToServerPort;
+
+
     @Override
     public void run(String... args) throws Exception {
         if (args.length > 0) {
-            log.info("first command-line parameter: '{" + args[0] + "}'" );
+            log.info("first command-line parameter: '{" + args[0] + "}'");
         }
 
         try (ServerSocket clientServerSocket = new ServerSocket(clientToServerPort);
@@ -52,14 +61,14 @@ public class ServerRunner implements CommandLineRunner {
                         clientConnections.put(methodAndPort.get(), clientSocket);
                         log.info("New client successfully connected with proxy request " + methodAndPort.get());
 
-                        int tempUserRequestsPort = 9001;
-                        String generatedLink = "http://localhost:" + tempUserRequestsPort;
+                        String generatedLink = "http://sub1.localhost" + ":" + userToServerPort;
                         sendClientMessage("LINK " + generatedLink, clientSocket);
-                        UserHttpServer userHttpServer =
-                                new UserHttpServer(tempUserRequestsPort, clientSocket, userConnections);
-
-                        userHttpServer.startServer();
-                        log.info("Server is listening on users on: " + methodAndPort.get());
+                        clientList.getList().put(generatedLink, clientSocket);
+//                        UserHttpServer userHttpServer =
+//                                new UserHttpServer(tempUserRequestsPort, clientSocket, userConnections);
+//
+//                        userHttpServer.startServer();
+                        // log.info("Server is listening on users on: " + methodAndPort.get());
                     }
                 } else {
                     log.info("Received wrong protocol and port value");
