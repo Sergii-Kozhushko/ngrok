@@ -14,17 +14,17 @@ public class HttpRequestSerializer {
         try {
             objectMapper.writeValue(outputStream, request);
         } catch (IOException e) {
-            throw new RuntimeException("Client is not available", e);
+            throw new RuntimeException("Can't write http-request to socket: Client is not available", e);
         }
     }
 
-    public static HttpRequest readFromInputStream(InputStream inputStream) throws RuntimeException {
+    public static HttpRequest readFromInputStream(InputStream inputStream) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             HttpRequest request = objectMapper.readValue(inputStream, HttpRequest.class);
             return request;
         } catch (IOException e) {
-            throw new RuntimeException("Server is not available", e);
+            throw new RuntimeException("Can't read http-request socket: Server is not available", e);
         }
     }
 }
