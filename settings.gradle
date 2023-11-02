@@ -2,6 +2,3 @@ rootProject.name = 'ngrok'
 include 'utils'
 include 'server'
 include 'client'
-
-
-
