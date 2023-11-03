@@ -1,12 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.1.4'
+    id 'java-library'
     id 'io.spring.dependency-management' version '1.1.3'
-    id 'checkstyle'
+    id 'org.springframework.boot' version '3.1.5'
 }
 
-group = 'de.hellfish.ngrok'
-version = '0.0.1-SNAPSHOT'
+
 
 java {
     sourceCompatibility = '17'
@@ -23,23 +22,14 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation project(':utils')
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'commons-io:commons-io:2.14.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation 'org.springframework.boot:spring-boot-starter-web:3.1.4'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-checkstyle {
-    configFile = file("${rootDir}/checkstyle.xml")
-}
-checkstyleMain {
-    source ='src/main/java'
-}
-checkstyleTest {
-    source ='src/test/java'
 }

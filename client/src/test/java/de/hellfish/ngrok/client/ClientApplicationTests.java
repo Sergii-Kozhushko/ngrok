@@ -1,10 +1,10 @@
-package com.example.ngrok;
+package de.hellfish.ngrok.client;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class NgrokApplicationTests {
+class ClientApplicationTests {
 
     @Test
     void contextLoads() {
