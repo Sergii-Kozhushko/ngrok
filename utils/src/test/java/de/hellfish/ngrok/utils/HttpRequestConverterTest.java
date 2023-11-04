@@ -67,12 +67,12 @@ class HttpRequestConverterTest {
         });
         when(mockRequest.getMethod()).thenReturn("GET");
         when(mockRequest.getRequestURI()).thenReturn("/test-uri");
-        HttpRequest httpRequest = HttpRequestConverter.convert(mockRequest);
+        MyHttpRequest myHttpRequest = HttpRequestConverter.convertServletToMy(mockRequest);
 
         // then
-        assertEquals(expectedHeaders, httpRequest.getHeaders());
-        assertEquals("GET", httpRequest.getMethod());
-        assertEquals("/test-uri", httpRequest.getUrl());
-        assertArrayEquals(expectedBody, httpRequest.getBody());
+        assertEquals(expectedHeaders, myHttpRequest.getHeaders());
+        assertEquals("GET", myHttpRequest.getMethod());
+        assertEquals("/test-uri", myHttpRequest.getUrl());
+        assertArrayEquals(expectedBody, myHttpRequest.getBody());
     }
 }
