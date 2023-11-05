@@ -11,8 +11,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class HttpRequestConverter {
+    public static Set<String> excludedHeaderNames;
 
     public static MyHttpRequest convertServletToMy(HttpServletRequest request) {
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -35,24 +37,28 @@ public class HttpRequestConverter {
     }
 
     public static HttpRequest convertMyToHttp(MyHttpRequest myHttpRequest, String serviceAddress) {
+
         String userUrl = serviceAddress + myHttpRequest.getUri();
         URI uri = URI.create(userUrl);
 
+        excludedHeaderNames.add("content-length");
+        excludedHeaderNames.add("host");
+        excludedHeaderNames.add("connection");
         Map<String, String> headers = new HashMap<>();
-        myHttpRequest.getHeaders().forEach((key, value) -> headers.put(key, value));
+        myHttpRequest.getHeaders().forEach((key, value) -> {
+            if (!excludedHeaderNames.contains(key)) {
+                headers.put(key, value);
+            }
+        }
+        );
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(uri)
                 .method(myHttpRequest.getMethod(), HttpRequest.BodyPublishers.ofString(
                         new String(myHttpRequest.getBody(), StandardCharsets.UTF_8)));
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            if (entry.getKey().equals("content-length") || entry.getKey().equals("host") ||
-                    entry.getKey().equals("connection")) {
-                continue;
-            }
             requestBuilder = requestBuilder.header(entry.getKey(), entry.getValue());
         }
         return requestBuilder.build();
     }
-
 }

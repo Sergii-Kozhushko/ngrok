@@ -46,5 +46,4 @@ public class ClientList {
     public void add(ClientData cd) {
         list.add(cd);
     }
-
 }

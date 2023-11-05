@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,11 +21,9 @@ public class ServerRunner implements CommandLineRunner {
 
     private static final int clientToServerPort = 8082;
     private boolean isRunning = true;
-
     private final ClientList clientConnections;
     private final Map<Integer, Socket> userConnections = new HashMap<>();
     ExecutorService executors = Executors.newFixedThreadPool(5);
-
 
     @Override
     public void run(String... args) throws Exception {
@@ -84,7 +81,7 @@ public class ServerRunner implements CommandLineRunner {
             pw.write(message + "\n");
             pw.flush();
         } catch (IOException e) {
-            throw new NoConnectionToClient("Error sending service message to client: " + message);
+            throw new NoConnectionToClientException("Error sending service message to client: " + message);
         }
     }
 
@@ -108,5 +105,4 @@ public class ServerRunner implements CommandLineRunner {
         }
         return Optional.empty();
     }
-
 }

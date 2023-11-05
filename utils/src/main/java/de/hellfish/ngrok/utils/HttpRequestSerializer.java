@@ -9,13 +9,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-
 public class HttpRequestSerializer {
+    private static JsonFactory jsonFactory;
 
-    public static void writeToOutputStream(MyHttpRequest request, OutputStream outputStream) throws RuntimeException {
+    public HttpRequestSerializer() {
         JsonFactory jsonFactory = new JsonFactory();
         jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         jsonFactory.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+    }
+
+    public static void writeToOutputStream(MyHttpRequest request, OutputStream outputStream) throws RuntimeException {
+
         ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
         try {
             objectMapper.writeValue(outputStream, request);
@@ -25,9 +29,6 @@ public class HttpRequestSerializer {
     }
 
     public static MyHttpRequest readFromInputStream(InputStream inputStream) {
-        JsonFactory jsonFactory = new JsonFactory();
-        jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-        jsonFactory.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
         try {
             MyHttpRequest request = objectMapper.readValue(inputStream, MyHttpRequest.class);
@@ -36,5 +37,4 @@ public class HttpRequestSerializer {
             throw new RuntimeException("Can't read http-request socket: Server is not available", e);
         }
     }
-
 }

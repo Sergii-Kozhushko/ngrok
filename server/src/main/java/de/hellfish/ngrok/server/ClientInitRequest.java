@@ -3,7 +3,6 @@ package de.hellfish.ngrok.server;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-
 @Getter
 @RequiredArgsConstructor
 public final class ClientInitRequest {
@@ -13,5 +12,4 @@ public final class ClientInitRequest {
     public String getValue() {
         return protocol + " " + port;
     }
-
 }

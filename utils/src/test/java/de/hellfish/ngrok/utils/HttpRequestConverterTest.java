@@ -72,7 +72,7 @@ class HttpRequestConverterTest {
         // then
         assertEquals(expectedHeaders, myHttpRequest.getHeaders());
         assertEquals("GET", myHttpRequest.getMethod());
-        assertEquals("/test-uri", myHttpRequest.getUrl());
+        assertEquals("/test-uri", myHttpRequest.getUri());
         assertArrayEquals(expectedBody, myHttpRequest.getBody());
     }
 }

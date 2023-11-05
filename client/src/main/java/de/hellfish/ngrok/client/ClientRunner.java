@@ -12,7 +12,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-
 @Slf4j
 @Component
 public class ClientRunner implements CommandLineRunner {
@@ -23,7 +22,6 @@ public class ClientRunner implements CommandLineRunner {
     private static Socket serverSocket;
     private static PrintWriter serverOut;
     private static BufferedReader serverIn;
-
 
     @Override
     public void run(String... args) {
@@ -67,5 +65,4 @@ public class ClientRunner implements CommandLineRunner {
         }
         return true;
     }
-
 }

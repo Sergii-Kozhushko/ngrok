@@ -2,7 +2,6 @@ package de.hellfish.ngrok.server;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
 import java.net.Socket;
 
 @Getter
@@ -20,5 +19,4 @@ public final class ClientData {
     public String getClientHost() {
         return socket.getLocalAddress() + ":" + socket.getPort();
     }
-
 }

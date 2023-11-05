@@ -17,7 +17,8 @@ class HttpRequestSerializerTest {
         // given
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        MyHttpRequest request = new MyHttpRequest(headers, "GET", "http://sub1.localhost:9000", "/example", "Hello, World!".getBytes());
+        MyHttpRequest request = new MyHttpRequest(headers, "GET",
+                "sub1.localhost", 9000, "/example", "Hello, World!".getBytes());
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         HttpRequestSerializer.writeToOutputStream(request, outputStream);

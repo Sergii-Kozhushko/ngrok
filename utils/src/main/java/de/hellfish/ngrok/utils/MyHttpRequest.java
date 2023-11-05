@@ -33,5 +33,4 @@ public final class MyHttpRequest {
         this.uri = uri;
         this.body = body;
     }
-
 }
