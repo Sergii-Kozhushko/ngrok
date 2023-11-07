@@ -1,15 +1,16 @@
 package de.hellfish.ngrok.server;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,14 +23,12 @@ public class ServerRunner implements CommandLineRunner {
     private static final int clientToServerPort = 8082;
     private boolean isRunning = true;
     private final ClientList clientConnections;
-    private final Map<Integer, Socket> userConnections = new HashMap<>();
     ExecutorService executors = Executors.newFixedThreadPool(5);
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
 
-        try (ServerSocket clientServerSocket = new ServerSocket(clientToServerPort);
-        ) {
+        try (ServerSocket clientServerSocket = new ServerSocket(clientToServerPort)) {
             log.info("Ngrok-Server started. Listening on clients on port: " + clientToServerPort);
             Socket clientSocket;
             while (isRunning) {
@@ -49,30 +48,26 @@ public class ServerRunner implements CommandLineRunner {
         @Override
         public void run() {
             log.info("New client connected: " + clientSocket.getLocalAddress() + ":" + clientSocket.getPort());
-            // get init request from client
-            Optional<ClientInitRequest> protocolAndPortOptional = fetchServicePortAndProtocol(clientSocket);
-            if (protocolAndPortOptional.isEmpty()) {
+            Optional<ClientInitRequest> protocolAndPort = fetchServiceProtocolAndPort(clientSocket);
+            if (protocolAndPort.isEmpty()) {
                 log.error("Error on handshake with client");
                 return;
             }
-            String protocolAndPort = protocolAndPortOptional.get().getValue();
-            // send user-link to client
-            if (clientList.containsProtocolAndPort(protocolAndPort)) {
-                String errorMessage = "ERROR " + protocolAndPort + " is already in use";
+
+            if (clientList.containsProtocolAndPort(protocolAndPort.get(), clientSocket)) {
+                String errorMessage = "ERROR " + protocolAndPort.get().getValue() + " is already in use";
                 log.error(errorMessage);
                 sendMessageToClient(errorMessage, clientSocket);
-                return;
             } else {
                 // TODO add user-link generation
                 String generatedLink = "http://sub1.localhost:9000";
-                ClientData cd = new ClientData(generatedLink, clientSocket,
-                        protocolAndPortOptional.get().getProtocol(), protocolAndPortOptional.get().getPort());
-                clientList.add(cd);
-                log.info("Received proxy request from client " + cd.getClientHost() +": " + protocolAndPort);
+                SocketState clientData = new SocketState(clientSocket, protocolAndPort.get().getProtocol(), protocolAndPort.get().getPort());
+                clientList.getList().put(generatedLink, clientData);
+                log.info("Received proxy request from client (" + clientSocket.getLocalAddress() + ":" +
+                                clientSocket.getPort() + "): " + protocolAndPort.get().getValue());
                 sendMessageToClient("LINK " + generatedLink, clientSocket);
             }
         }
-
     }
 
     private static void sendMessageToClient(String message, Socket clientSocket) {
@@ -85,7 +80,7 @@ public class ServerRunner implements CommandLineRunner {
         }
     }
 
-    private static Optional<ClientInitRequest> fetchServicePortAndProtocol(Socket clientSocket) {
+    private static Optional<ClientInitRequest> fetchServiceProtocolAndPort(Socket clientSocket) {
         try {
             BufferedReader clientReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String clientRequest = clientReader.readLine();

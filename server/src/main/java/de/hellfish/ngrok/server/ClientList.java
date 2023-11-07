@@ -2,10 +2,9 @@ package de.hellfish.ngrok.server;
 
 import lombok.Getter;
 import org.springframework.stereotype.Component;
-
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Stores client data: socket connection, link for users and service port.
@@ -14,36 +13,16 @@ import java.util.Set;
 @Getter
 @Component
 public class ClientList {
-    private final Set<ClientData> list = new HashSet<>();
+    private final Map<String, SocketState> list = new HashMap<>();
 
-    public boolean containsProtocolAndPort(String pp) {
-        for (ClientData cd : list) {
-            if (cd.getServiceProtocolAndPort().equals(pp)) {
+    public boolean containsProtocolAndPort(ClientInitRequest clientRequest, Socket clientSocket) {
+        for (Map.Entry<String, SocketState> entry : list.entrySet()) {
+            SocketState value = entry.getValue();
+            if (value.getServicePort() == clientRequest.getPort() && value.getServiceProtocol().equals(clientRequest.getProtocol())
+            && clientSocket.getLocalAddress().toString().equals(value.getSocket().getLocalAddress().toString())) {
                 return true;
             }
         }
         return false;
-    }
-
-    public boolean containsUserLink(String userLink) {
-        for (ClientData cd : list) {
-            if (cd.getUserLink().equals(userLink)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Socket getSocketByUserLink(String userLink) {
-        for (ClientData cd : list) {
-            if (cd.getUserLink().equals(userLink)) {
-                return cd.getSocket();
-            }
-        }
-        return null;
-    }
-
-    public void add(ClientData cd) {
-        list.add(cd);
     }
 }

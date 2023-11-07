@@ -19,9 +19,10 @@ public class ClientRunner implements CommandLineRunner {
     private static final String serverHost = "localhost";
     private static final int serverPort = 8082;
     private static boolean running = true;
-    private static Socket serverSocket;
-    private static PrintWriter serverOut;
-    private static BufferedReader serverIn;
+    private Socket serverSocket;
+    private PrintWriter serverOut;
+    private BufferedReader serverIn;
+
 
     @Override
     public void run(String... args) {
@@ -38,7 +39,7 @@ public class ClientRunner implements CommandLineRunner {
         }
     }
 
-    private boolean initConnectionWithServer() {
+    public boolean initConnectionWithServer() {
         try {
             serverSocket = new Socket(serverHost, serverPort);
             serverOut = new PrintWriter(serverSocket.getOutputStream());

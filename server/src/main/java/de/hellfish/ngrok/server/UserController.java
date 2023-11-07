@@ -29,11 +29,12 @@ public class UserController {
 
         // http://sub1.localhost:9000/index/api
         String userURL = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        if (!clientList.containsUserLink(userURL)) {
+        SocketState client = clientList.getList().get(userURL);
+        if (client == null) {
             log.warn("Server received wrong link from user: " + userURL);
             return ResponseEntity.badRequest().body("Link " + userURL +" was not recognized by ngrok-server");
         }
-        Socket clientSocket = clientList.getSocketByUserLink(userURL);
+        Socket clientSocket = client.getSocket();
         MyHttpRequest myHttpRequest = HttpRequestConverter.convertServletToMy(request);
         log.info("Server received user request: " + myHttpRequest);
 

@@ -9,18 +9,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+
 public class HttpRequestSerializer {
     private static JsonFactory jsonFactory;
+    private static final ObjectMapper objectMapper;
 
-    public HttpRequestSerializer() {
+    static {
         JsonFactory jsonFactory = new JsonFactory();
         jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         jsonFactory.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+        objectMapper = new ObjectMapper(jsonFactory);
     }
 
     public static void writeToOutputStream(MyHttpRequest request, OutputStream outputStream) throws RuntimeException {
-
-        ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
         try {
             objectMapper.writeValue(outputStream, request);
         } catch (IOException e) {
@@ -29,7 +30,6 @@ public class HttpRequestSerializer {
     }
 
     public static MyHttpRequest readFromInputStream(InputStream inputStream) {
-        ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
         try {
             MyHttpRequest request = objectMapper.readValue(inputStream, MyHttpRequest.class);
             return request;
