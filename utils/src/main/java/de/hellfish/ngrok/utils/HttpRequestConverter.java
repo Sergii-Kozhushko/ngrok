@@ -5,18 +5,19 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class HttpRequestConverter {
     public static Set<String> excludedHeaderNames;
 
-    public static MyHttpRequest convertServletToMy(HttpServletRequest request) {
+    static {
+        excludedHeaderNames = new HashSet<>();
+        excludedHeaderNames.add("content-length");
+        excludedHeaderNames.add("host");
+        excludedHeaderNames.add("connection");
+    }
+
+    public static HttpRequest convert(HttpServletRequest request) {
         Enumeration<String> headerNames = request.getHeaderNames();
         Map<String, String> headers = new HashMap<>();
         while (headerNames.hasMoreElements()) {
@@ -32,33 +33,7 @@ public class HttpRequestConverter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new MyHttpRequest(headers, request.getMethod(), request.getServerName(),
+        return new HttpRequest(headers, request.getMethod(), request.getServerName(),
                 request.getServerPort(), request.getRequestURI(), body);
-    }
-
-    public static HttpRequest convertMyToHttp(MyHttpRequest myHttpRequest, String serviceAddress) {
-
-        String userUrl = serviceAddress + myHttpRequest.getUri();
-        URI uri = URI.create(userUrl);
-
-        excludedHeaderNames.add("content-length");
-        excludedHeaderNames.add("host");
-        excludedHeaderNames.add("connection");
-        Map<String, String> headers = new HashMap<>();
-        myHttpRequest.getHeaders().forEach((key, value) -> {
-            if (!excludedHeaderNames.contains(key)) {
-                headers.put(key, value);
-            }
-        }
-        );
-
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(uri)
-                .method(myHttpRequest.getMethod(), HttpRequest.BodyPublishers.ofString(
-                        new String(myHttpRequest.getBody(), StandardCharsets.UTF_8)));
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            requestBuilder = requestBuilder.header(entry.getKey(), entry.getValue());
-        }
-        return requestBuilder.build();
     }
 }

@@ -2,7 +2,7 @@ package de.hellfish.ngrok.server;
 
 import lombok.Getter;
 import org.springframework.stereotype.Component;
-import java.net.Socket;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,14 +15,4 @@ import java.util.Map;
 public class ClientList {
     private final Map<String, SocketState> list = new HashMap<>();
 
-    public boolean containsProtocolAndPort(ClientInitRequest clientRequest, Socket clientSocket) {
-        for (Map.Entry<String, SocketState> entry : list.entrySet()) {
-            SocketState value = entry.getValue();
-            if (value.getServicePort() == clientRequest.getPort() && value.getServiceProtocol().equals(clientRequest.getProtocol())
-            && clientSocket.getLocalAddress().toString().equals(value.getSocket().getLocalAddress().toString())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

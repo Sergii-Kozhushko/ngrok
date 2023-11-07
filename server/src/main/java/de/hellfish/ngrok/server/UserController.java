@@ -2,7 +2,7 @@ package de.hellfish.ngrok.server;
 
 import de.hellfish.ngrok.utils.HttpRequestConverter;
 import de.hellfish.ngrok.utils.HttpRequestSerializer;
-import de.hellfish.ngrok.utils.MyHttpRequest;
+import de.hellfish.ngrok.utils.HttpRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,18 +31,18 @@ public class UserController {
         String userURL = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
         SocketState client = clientList.getList().get(userURL);
         if (client == null) {
-            log.warn("Server received wrong link from user: " + userURL);
-            return ResponseEntity.badRequest().body("Link " + userURL +" was not recognized by ngrok-server");
+            log.warn(String.format(Messages.ERROR_WRONG_LINK_USER,  userURL));
+            return ResponseEntity.badRequest().body(String.format(Messages.ERROR_WRONG_LINK_USER,  userURL));
         }
         Socket clientSocket = client.getSocket();
-        MyHttpRequest myHttpRequest = HttpRequestConverter.convertServletToMy(request);
-        log.info("Server received user request: " + myHttpRequest);
+        HttpRequest httpRequest = HttpRequestConverter.convert(request);
+        log.info(String.format(Messages.NEW_USER_REQUEST, httpRequest));
 
         try {
-            HttpRequestSerializer.writeToOutputStream(myHttpRequest, clientSocket.getOutputStream());
+            HttpRequestSerializer.writeToOutputStream(httpRequest, clientSocket.getOutputStream());
         } catch (IOException e) {
-            log.error("Error sending user request to client", e);
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Error connecting to ngrok-client");
+            log.error(Messages.ERROR_CONNECTION_CLIENT, e);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Messages.ERROR_CONNECTION_CLIENT);
         }
         return ResponseEntity.ok().build();
     }

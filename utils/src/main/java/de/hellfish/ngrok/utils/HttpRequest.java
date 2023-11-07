@@ -11,7 +11,7 @@ import java.util.Map;
 @Getter
 @ToString
 @EqualsAndHashCode
-public final class MyHttpRequest {
+public final class HttpRequest {
     private final Map<String, String> headers;
     private final String method;
     private final String server; //sub1.localhost
@@ -20,12 +20,12 @@ public final class MyHttpRequest {
     private final byte[] body;
 
     @JsonCreator
-    public MyHttpRequest(@JsonProperty("headers")Map<String, String> headers,
-                         @JsonProperty("method") String method,
-                         @JsonProperty("server") String server,
-                         @JsonProperty("port") int port,
-                         @JsonProperty("uri") String uri,
-                         @JsonProperty("body") byte[] body) {
+    public HttpRequest(@JsonProperty("headers")Map<String, String> headers,
+                       @JsonProperty("method") String method,
+                       @JsonProperty("server") String server,
+                       @JsonProperty("port") int port,
+                       @JsonProperty("uri") String uri,
+                       @JsonProperty("body") byte[] body) {
         this.headers = headers;
         this.method = method;
         this.server = server;

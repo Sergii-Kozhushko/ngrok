@@ -17,14 +17,14 @@ class HttpRequestSerializerTest {
         // given
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        MyHttpRequest request = new MyHttpRequest(headers, "GET",
+        HttpRequest request = new HttpRequest(headers, "GET",
                 "sub1.localhost", 9000, "/example", "Hello, World!".getBytes());
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         HttpRequestSerializer.writeToOutputStream(request, outputStream);
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        MyHttpRequest deserializedRequest = HttpRequestSerializer.readFromInputStream(inputStream);
+        HttpRequest deserializedRequest = HttpRequestSerializer.readFromInputStream(inputStream);
 
         // then
         assertEquals(request, deserializedRequest);

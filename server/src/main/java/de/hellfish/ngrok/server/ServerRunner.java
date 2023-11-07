@@ -23,20 +23,20 @@ public class ServerRunner implements CommandLineRunner {
     private static final int clientToServerPort = 8082;
     private boolean isRunning = true;
     private final ClientList clientConnections;
-    ExecutorService executors = Executors.newFixedThreadPool(5);
+    private final ExecutorService executors = Executors.newFixedThreadPool(5);
 
     @Override
     public void run(String... args) {
 
         try (ServerSocket clientServerSocket = new ServerSocket(clientToServerPort)) {
-            log.info("Ngrok-Server started. Listening on clients on port: " + clientToServerPort);
+            log.info(String.format(Messages.SERVER_START, clientToServerPort));
             Socket clientSocket;
             while (isRunning) {
                 clientSocket = clientServerSocket.accept();
                 executors.execute(new ClientHandler(clientSocket, clientConnections));
             }
         } catch (IOException e) {
-            log.error("Error opening server socket", e);
+            log.error(String.format(Messages.ERROR_OPEN_SERVER_SOCKET, clientToServerPort), e);
         }
     }
 
@@ -47,15 +47,15 @@ public class ServerRunner implements CommandLineRunner {
 
         @Override
         public void run() {
-            log.info("New client connected: " + clientSocket.getLocalAddress() + ":" + clientSocket.getPort());
+            log.info(String.format(Messages.NEW_CLIENT,clientSocket.getLocalAddress(), clientSocket.getLocalAddress()));
             Optional<ClientInitRequest> protocolAndPort = fetchServiceProtocolAndPort(clientSocket);
             if (protocolAndPort.isEmpty()) {
-                log.error("Error on handshake with client");
+                log.error(Messages.ERROR_HANDSHAKE);
                 return;
             }
 
-            if (clientList.containsProtocolAndPort(protocolAndPort.get(), clientSocket)) {
-                String errorMessage = "ERROR " + protocolAndPort.get().getValue() + " is already in use";
+            if (!protocolAndPort.get().getProtocol().equalsIgnoreCase("HTTP")) {
+                String errorMessage = String.format(Messages.ERROR_WRONG_PROTOCOL, protocolAndPort.get().getValue());
                 log.error(errorMessage);
                 sendMessageToClient(errorMessage, clientSocket);
             } else {
@@ -63,8 +63,8 @@ public class ServerRunner implements CommandLineRunner {
                 String generatedLink = "http://sub1.localhost:9000";
                 SocketState clientData = new SocketState(clientSocket, protocolAndPort.get().getProtocol(), protocolAndPort.get().getPort());
                 clientList.getList().put(generatedLink, clientData);
-                log.info("Received proxy request from client (" + clientSocket.getLocalAddress() + ":" +
-                                clientSocket.getPort() + "): " + protocolAndPort.get().getValue());
+                log.info(String.format(Messages.NEW_INIT_REQUEST_FROM_CLIENT, clientSocket.getLocalAddress(),
+                        clientSocket.getPort(), protocolAndPort.get().getValue()));
                 sendMessageToClient("LINK " + generatedLink, clientSocket);
             }
         }
@@ -76,7 +76,7 @@ public class ServerRunner implements CommandLineRunner {
             pw.write(message + "\n");
             pw.flush();
         } catch (IOException e) {
-            throw new NoConnectionToClientException("Error sending service message to client: " + message);
+            throw new NoConnectionToClientException(Messages.ERROR_CONNECTION_CLIENT, e);
         }
     }
 
@@ -89,14 +89,14 @@ public class ServerRunner implements CommandLineRunner {
             String port = requestParts[1];
 
             if (!protocol.equals("HTTP") || !port.matches("^[1-9]\\d*$")) {
-                log.error("Init request from client has irregular format");
+                log.error(Messages.ERROR_INIT_REQUEST_CLIENT);
                 return Optional.empty();
             } else {
                 ClientInitRequest mp = new ClientInitRequest(Integer.parseInt(port), protocol);
                 return Optional.of(mp);
             }
         } catch (IOException e) {
-            log.error("Error reading init request from client", e);
+            log.error(Messages.ERROR_CONNECTION_CLIENT, e);
         }
         return Optional.empty();
     }
