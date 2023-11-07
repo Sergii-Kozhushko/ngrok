@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,7 +46,7 @@ public class ServerRunner implements CommandLineRunner {
 
         @Override
         public void run() {
-            log.info(String.format(Messages.NEW_CLIENT,clientSocket.getLocalAddress(), clientSocket.getLocalAddress()));
+            log.info(String.format(Messages.NEW_CLIENT, clientSocket.getLocalAddress(), clientSocket.getLocalAddress()));
             Optional<ClientInitRequest> protocolAndPort = fetchServiceProtocolAndPort(clientSocket);
             if (protocolAndPort.isEmpty()) {
                 log.error(Messages.ERROR_HANDSHAKE);
@@ -61,7 +60,8 @@ public class ServerRunner implements CommandLineRunner {
             } else {
                 // TODO add user-link generation
                 String generatedLink = "http://sub1.localhost:9000";
-                SocketState clientData = new SocketState(clientSocket, protocolAndPort.get().getProtocol(), protocolAndPort.get().getPort());
+                SocketState clientData = new SocketState(clientSocket, protocolAndPort.get().getProtocol(),
+                        protocolAndPort.get().getPort());
                 clientList.getList().put(generatedLink, clientData);
                 log.info(String.format(Messages.NEW_INIT_REQUEST_FROM_CLIENT, clientSocket.getLocalAddress(),
                         clientSocket.getPort(), protocolAndPort.get().getValue()));

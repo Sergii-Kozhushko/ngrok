@@ -20,19 +20,24 @@ public class UserController {
     private final ClientList clientList;
 
     /**
-     * Method processes requests from users
-     * @param request - contains all info about incoming request
-     * @return
+     * Handles incoming user requests to proxy them to the appropriate service.
+     *
+     * This method is invoked for all requests with a path matching the pattern "/*" and is responsible for
+     * forwarding the client request to the corresponding service. It retrieves the client's URL, looks up the
+     * associated socket, and sends the HTTP request to the service via the socket.
+     *
+     * @param request The HttpServletRequest representing the incoming client request.
+     * @return A ResponseEntity with the appropriate HTTP status code and response body from service.
      */
     @GetMapping("/**")
-    public ResponseEntity<String> clientRequests(HttpServletRequest request) {
+    public ResponseEntity<String> userRequests(HttpServletRequest request) {
 
         // http://sub1.localhost:9000/index/api
-        String userURL = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        SocketState client = clientList.getList().get(userURL);
+        String userUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        SocketState client = clientList.getList().get(userUrl);
         if (client == null) {
-            log.warn(String.format(Messages.ERROR_WRONG_LINK_USER,  userURL));
-            return ResponseEntity.badRequest().body(String.format(Messages.ERROR_WRONG_LINK_USER,  userURL));
+            log.warn(String.format(Messages.ERROR_WRONG_LINK_USER,  userUrl));
+            return ResponseEntity.badRequest().body(String.format(Messages.ERROR_WRONG_LINK_USER,  userUrl));
         }
         Socket clientSocket = client.getSocket();
         HttpRequest httpRequest = HttpRequestConverter.convert(request);
