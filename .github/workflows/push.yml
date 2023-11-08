@@ -1,0 +1,40 @@
+name: pull-request
+on:
+  push:
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17  # Выберите версию Java, которую вы используете
+          distribution: oracle
+
+      - name: Build Gradle Project
+        run: ./gradlew build -x test
+
+      - name: Run Tests
+        run: ./gradlew test  # Затем запуск тестов
+
+      - name: Run Checkstyle
+        run: |
+      # Установка Checkstyle
+          curl -o checkstyle.jar -L https://github.com/checkstyle/checkstyle/releases/download/8.43/checkstyle-8.43-all.jar
+      
+      # Запуск Checkstyle
+          java -jar checkstyle.jar -c /config/checkstyle/checkstyle.xml src/  # Укажите путь к файлу checkstyle.xml и каталогу с исходным кодом
+
+        continue-on-error: true  # Продолжать выполнение, даже если есть ошибки
+
+      - name: Checkstyle Summary
+        run: |
+      # Выводит краткое сообщение о результатах проверки
+          if [ -f checkstyle-result.xml ]; then
+          echo "::set-output name=checkstyle::$(grep -c '<error' checkstyle-result.xml) errors found"
+          else
+          echo "::set-output name=checkstyle::0 errors found"
+          fi
