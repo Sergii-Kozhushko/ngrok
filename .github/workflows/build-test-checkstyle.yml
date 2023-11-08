@@ -34,7 +34,7 @@ jobs:
         run: |
           # Outputs a summary message of the check results
           if [ -f checkstyle-result.xml ]; then
-          echo "::set-output name=checkstyle::$(grep -c '<error' checkstyle-result.xml) errors found"
+          echo "checkstyle=$(grep -c '<error' checkstyle-result.xml) errors found" >> $GITHUB_ENV
           else
-          echo "::set-output name=checkstyle::0 errors found"
+          echo "checkstyle=0 errors found" >> $GITHUB_ENV
           fi
