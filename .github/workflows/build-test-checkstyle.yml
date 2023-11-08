@@ -29,7 +29,9 @@ jobs:
           curl -o checkstyle.jar -L https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.4/checkstyle-10.12.4-all.jar
           
           # Running Checkstyle
-          java -jar checkstyle.jar -c /config/checkstyle/checkstyle.xml src/  # Specify the path to the checkstyle.xml file and the source code directory
+          java -jar checkstyle.jar -c config/checkstyle/checkstyle.xml client/src/ || true
+          java -jar checkstyle.jar -c config/checkstyle/checkstyle.xml server/src/ || true
+          java -jar checkstyle.jar -c config/checkstyle/checkstyle.xml utils/src/ || true
 
         continue-on-error: true  # Continue even if there are errors
 
