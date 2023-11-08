@@ -26,7 +26,7 @@ jobs:
       - name: Run Checkstyle
         run: |
           # Setting up Checkstyle
-          curl -o checkstyle.jar -L https://github.com/checkstyle/checkstyle/releases/download/8.43/checkstyle-8.43-all.jar
+          curl -o checkstyle.jar -L https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.4/checkstyle-10.12.4-all.jar
           
           # Running Checkstyle
           java -jar checkstyle.jar -c /config/checkstyle/checkstyle.xml src/  # Specify the path to the checkstyle.xml file and the source code directory
