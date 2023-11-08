@@ -2,20 +2,11 @@ package de.hellfish.ngrok.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
 public class HttpRequestConverter {
-    public static Set<String> excludedHeaderNames;
-
-    static {
-        excludedHeaderNames = new HashSet<>();
-        excludedHeaderNames.add("content-length");
-        excludedHeaderNames.add("host");
-        excludedHeaderNames.add("connection");
-    }
 
     public static HttpRequest convert(HttpServletRequest request) {
         Enumeration<String> headerNames = request.getHeaderNames();

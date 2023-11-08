@@ -12,12 +12,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Map;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 public class UserController {
-    private final ClientList clientList;
+    private final Map<String, Socket> clientList;
 
     /**
      * Handles incoming user requests to proxy them to the appropriate service.
@@ -34,12 +35,11 @@ public class UserController {
 
         // http://sub1.localhost:9000/index/api
         String userUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        SocketState client = clientList.getList().get(userUrl);
-        if (client == null) {
+        Socket clientSocket = clientList.get(userUrl);
+        if (clientSocket == null) {
             log.warn(String.format(Messages.ERROR_WRONG_LINK_USER,  userUrl));
             return ResponseEntity.badRequest().body(String.format(Messages.ERROR_WRONG_LINK_USER,  userUrl));
         }
-        Socket clientSocket = client.getSocket();
         HttpRequest httpRequest = HttpRequestConverter.convert(request);
         log.info(String.format(Messages.NEW_USER_REQUEST, httpRequest));
 

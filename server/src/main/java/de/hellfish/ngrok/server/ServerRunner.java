@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,30 +20,29 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class ServerRunner implements CommandLineRunner {
 
-    private static final int clientToServerPort = 8082;
-    private boolean isRunning = true;
-    private final ClientList clientConnections;
+    private static final int CLIENT_PORT = 8082;
+    private final Map<String, Socket> clientConnections;
     private final ExecutorService executors = Executors.newFixedThreadPool(5);
 
     @Override
     public void run(String... args) {
 
-        try (ServerSocket clientServerSocket = new ServerSocket(clientToServerPort)) {
-            log.info(String.format(Messages.SERVER_START, clientToServerPort));
+        try (ServerSocket clientServerSocket = new ServerSocket(CLIENT_PORT)) {
+            log.info(String.format(Messages.SERVER_START, CLIENT_PORT));
             Socket clientSocket;
-            while (isRunning) {
+            while (true) {
                 clientSocket = clientServerSocket.accept();
                 executors.execute(new ClientHandler(clientSocket, clientConnections));
             }
         } catch (IOException e) {
-            log.error(String.format(Messages.ERROR_OPEN_SERVER_SOCKET, clientToServerPort), e);
+            log.error(String.format(Messages.ERROR_OPEN_SERVER_SOCKET, CLIENT_PORT), e);
         }
     }
 
     @RequiredArgsConstructor
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
-        private final ClientList clientList;
+        private final Map<String, Socket> clientList;
 
         @Override
         public void run() {
@@ -60,9 +60,7 @@ public class ServerRunner implements CommandLineRunner {
             } else {
                 // TODO add user-link generation
                 String generatedLink = "http://sub1.localhost:9000";
-                SocketState clientData = new SocketState(clientSocket, protocolAndPort.get().getProtocol(),
-                        protocolAndPort.get().getPort());
-                clientList.getList().put(generatedLink, clientData);
+                clientList.put(generatedLink, clientSocket);
                 log.info(String.format(Messages.NEW_INIT_REQUEST_FROM_CLIENT, clientSocket.getLocalAddress(),
                         clientSocket.getPort(), protocolAndPort.get().getValue()));
                 sendMessageToClient("LINK " + generatedLink, clientSocket);
