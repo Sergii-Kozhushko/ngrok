@@ -26,3 +26,4 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 /client/src/test/java/de/hellfish/ngrok/client/ClientRunnerTest.java
+/server/src/test/java/de/hellfish/ngrok/server/ClientServerIntegrationTest.java

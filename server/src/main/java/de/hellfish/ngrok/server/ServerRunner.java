@@ -2,8 +2,10 @@ package de.hellfish.ngrok.server;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,28 +16,46 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ServerRunner implements CommandLineRunner {
 
-    private static final int CLIENT_PORT = 8082;
+    @Value("${client.port}")
+    private int clientPort;
     private final Map<String, Socket> clientConnections;
     private final ExecutorService executors = Executors.newFixedThreadPool(5);
+    private final AtomicBoolean running = new AtomicBoolean(true);
+    private ServerSocket serverSocket;
 
     @Override
     public void run(String... args) {
-
-        try (ServerSocket clientServerSocket = new ServerSocket(CLIENT_PORT)) {
-            log.info(String.format(Messages.SERVER_START, CLIENT_PORT));
+        try  {
+            serverSocket = new ServerSocket(clientPort);
+            log.info(String.format("Ngrok-Server started. Listening on clients on port: %s", clientPort));
             Socket clientSocket;
-            while (true) {
-                clientSocket = clientServerSocket.accept();
+            while (running.get()) {
+                clientSocket = serverSocket.accept();
                 executors.execute(new ClientHandler(clientSocket, clientConnections));
             }
         } catch (IOException e) {
-            log.error(String.format(Messages.ERROR_OPEN_SERVER_SOCKET, CLIENT_PORT), e);
+            log.error(String.format("Error opening server socket, probably port %s is busy", clientPort), e);
+        } finally {
+            stopServer();
+        }
+    }
+
+    public void stopServer() {
+        running.set(false);
+        executors.shutdownNow();
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            log.error("Could not close server socket", e);
         }
     }
 
@@ -46,22 +66,22 @@ public class ServerRunner implements CommandLineRunner {
 
         @Override
         public void run() {
-            log.info(String.format(Messages.NEW_CLIENT, clientSocket.getLocalAddress(), clientSocket.getLocalAddress()));
+            log.info(String.format("New client connected: %s:%s", clientSocket.getLocalAddress(), clientSocket.getLocalAddress()));
             Optional<ClientInitRequest> protocolAndPort = fetchServiceProtocolAndPort(clientSocket);
             if (protocolAndPort.isEmpty()) {
-                log.error(Messages.ERROR_HANDSHAKE);
+                log.error("Error on handshake with client");
                 return;
             }
 
             if (!protocolAndPort.get().getProtocol().equalsIgnoreCase("HTTP")) {
-                String errorMessage = String.format(Messages.ERROR_WRONG_PROTOCOL, protocolAndPort.get().getValue());
+                String errorMessage = String.format("ERROR Protocol '%s' is not supported by server", protocolAndPort.get().getValue());
                 log.error(errorMessage);
                 sendMessageToClient(errorMessage, clientSocket);
             } else {
                 // TODO add user-link generation
                 String generatedLink = "http://sub1.localhost:9000";
                 clientList.put(generatedLink, clientSocket);
-                log.info(String.format(Messages.NEW_INIT_REQUEST_FROM_CLIENT, clientSocket.getLocalAddress(),
+                log.info(String.format("Received request from client (%s:%s): %s", clientSocket.getLocalAddress(),
                         clientSocket.getPort(), protocolAndPort.get().getValue()));
                 sendMessageToClient("LINK " + generatedLink, clientSocket);
             }
@@ -74,7 +94,7 @@ public class ServerRunner implements CommandLineRunner {
             pw.write(message + "\n");
             pw.flush();
         } catch (IOException e) {
-            throw new NoConnectionToClientException(Messages.ERROR_CONNECTION_CLIENT, e);
+            throw new NoConnectionToClientException("Error connection to client", e);
         }
     }
 
@@ -87,14 +107,14 @@ public class ServerRunner implements CommandLineRunner {
             String port = requestParts[1];
 
             if (!protocol.equals("HTTP") || !port.matches("^[1-9]\\d*$")) {
-                log.error(Messages.ERROR_INIT_REQUEST_CLIENT);
+                log.error("Init request from client has irregular format");
                 return Optional.empty();
             } else {
                 ClientInitRequest mp = new ClientInitRequest(Integer.parseInt(port), protocol);
                 return Optional.of(mp);
             }
         } catch (IOException e) {
-            log.error(Messages.ERROR_CONNECTION_CLIENT, e);
+            log.error("Error connection to client", e);
         }
         return Optional.empty();
     }
