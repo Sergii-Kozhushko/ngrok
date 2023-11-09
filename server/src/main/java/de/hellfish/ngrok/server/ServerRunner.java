@@ -66,7 +66,8 @@ public class ServerRunner implements CommandLineRunner {
 
         @Override
         public void run() {
-            log.info(String.format("New client connected: %s:%s", clientSocket.getLocalAddress(), clientSocket.getLocalAddress()));
+            log.info(String.format("New client connected: %s:%s", clientSocket.getLocalAddress(),
+                    clientSocket.getLocalAddress()));
             Optional<ClientInitRequest> protocolAndPort = fetchServiceProtocolAndPort(clientSocket);
             if (protocolAndPort.isEmpty()) {
                 log.error("Error on handshake with client");
@@ -74,7 +75,8 @@ public class ServerRunner implements CommandLineRunner {
             }
 
             if (!protocolAndPort.get().getProtocol().equalsIgnoreCase("HTTP")) {
-                String errorMessage = String.format("ERROR Protocol '%s' is not supported by server", protocolAndPort.get().getValue());
+                String errorMessage = String.format("ERROR Protocol '%s' is not supported by server",
+                        protocolAndPort.get().getValue());
                 log.error(errorMessage);
                 sendMessageToClient(errorMessage, clientSocket);
             } else {
