@@ -1,5 +1,6 @@
 package de.hellfish.ngrok.server;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Getter
 public class ServerRunner implements CommandLineRunner {
 
     @Value("${client.port}")
@@ -38,6 +40,7 @@ public class ServerRunner implements CommandLineRunner {
             Socket clientSocket;
             while (running.get()) {
                 clientSocket = serverSocket.accept();
+
                 executors.execute(new ClientHandler(clientSocket, clientConnections));
             }
         } catch (IOException e) {
@@ -86,6 +89,7 @@ public class ServerRunner implements CommandLineRunner {
                 log.info(String.format("Received request from client (%s:%s): %s", clientSocket.getLocalAddress(),
                         clientSocket.getPort(), protocolAndPort.get().getValue()));
                 sendMessageToClient("LINK " + generatedLink, clientSocket);
+
             }
         }
     }
