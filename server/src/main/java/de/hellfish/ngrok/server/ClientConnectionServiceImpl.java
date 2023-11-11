@@ -23,4 +23,9 @@ public class ClientConnectionServiceImpl implements ClientConnectionService{
     public void removeClient(String key) {
         clientConnections.remove(key);
     }
+
+    @Override
+    public boolean isEmpty() {
+        return clientConnections.isEmpty();
+    }
 }

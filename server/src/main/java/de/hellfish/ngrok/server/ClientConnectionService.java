@@ -6,4 +6,5 @@ public interface ClientConnectionService {
     void addClient(String key, Socket socket);
     Socket getClient(String key);
     void removeClient(String key);
+    boolean isEmpty();
 }
