@@ -11,7 +11,7 @@ import java.net.Socket;
 
 @Slf4j
 public class ClientRunner {
-    private static int servicePort;
+    private static int servicePort; // 8082
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8082;
     private static Socket serverSocket;
