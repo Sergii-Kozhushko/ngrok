@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class ClientConnectionServiceImpl implements ClientConnectionService{
+public class ClientConnectionServiceImpl implements ClientConnectionService {
     private final ConcurrentHashMap<String, Socket> clientConnections = new ConcurrentHashMap<>();
 
     @Override
