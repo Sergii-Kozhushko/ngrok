@@ -8,14 +8,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
-    private final Map<String, Socket> clientList;
+    private final ClientConnectionService clientList;
 
     @Override
     public void run() {
@@ -33,7 +32,7 @@ public class ClientHandler implements Runnable {
         } else {
             // TODO add user-link generation
             String generatedLink = "http://sub1.localhost:9000";
-            clientList.put(generatedLink, clientSocket);
+            clientList.addClient(generatedLink, clientSocket);
             log.info("Received request from client (%{}:%{}): %{}", clientSocket.getLocalAddress(),
                     clientSocket.getPort(), protocolAndPort.get().getValue());
             sendMessageToClient("LINK " + generatedLink, clientSocket);

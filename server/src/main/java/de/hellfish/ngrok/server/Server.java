@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 public final class Server implements Runnable {
     @Value("${client.port}")
     private int clientPort;
-    private final Map<String, Socket> clientConnections;
+    private final ClientConnectionService clientConnections;
     private ServerSocket serverSocket;
     private boolean running;
     private final ExecutorService executors = Executors.newFixedThreadPool(5);

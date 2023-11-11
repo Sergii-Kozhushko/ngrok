@@ -1,8 +1,8 @@
 package de.hellfish.ngrok.server;
 
+import de.hellfish.ngrok.utils.HttpRequest;
 import de.hellfish.ngrok.utils.HttpRequestConverter;
 import de.hellfish.ngrok.utils.HttpRequestSerializer;
-import de.hellfish.ngrok.utils.HttpRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,15 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 public class UserController {
-    private final Map<String, Socket> clientList;
+    private final ClientConnectionService clientList;
 
     /**
      * Handles incoming user requests to proxy them to the appropriate service.
@@ -35,7 +35,7 @@ public class UserController {
     public ResponseEntity<String> userRequests(HttpServletRequest request) {
 
         String userUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        Socket clientSocket = clientList.get(userUrl);
+        Socket clientSocket = clientList.getClient(userUrl);
         if (clientSocket == null) {
             log.warn("Link {} was not recognized by ngrok-server",  userUrl);
             return ResponseEntity.badRequest().body(String.format("Link %s was not recognized by ngrok-server",
