@@ -19,8 +19,7 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        log.info(String.format("New client connected: %s:%s", clientSocket.getLocalAddress(),
-                clientSocket.getLocalAddress()));
+        log.info("New client connected: {}:{}", clientSocket.getLocalAddress(), clientSocket.getLocalAddress());
         Optional<ClientInitRequest> protocolAndPort = fetchServiceProtocolAndPort(clientSocket);
         if (protocolAndPort.isEmpty()) {
             log.error("Error on handshake with client");
@@ -35,8 +34,8 @@ public class ClientHandler implements Runnable {
             // TODO add user-link generation
             String generatedLink = "http://sub1.localhost:9000";
             clientList.put(generatedLink, clientSocket);
-            log.info(String.format("Received request from client (%s:%s): %s", clientSocket.getLocalAddress(),
-                    clientSocket.getPort(), protocolAndPort.get().getValue()));
+            log.info("Received request from client (%{}:%{}): %{}", clientSocket.getLocalAddress(),
+                    clientSocket.getPort(), protocolAndPort.get().getValue());
             sendMessageToClient("LINK " + generatedLink, clientSocket);
         }
     }

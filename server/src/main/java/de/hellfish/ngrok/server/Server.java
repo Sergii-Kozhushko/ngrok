@@ -30,10 +30,10 @@ public class Server implements Runnable {
         try {
             serverSocket = new ServerSocket(clientPort);
             running = true;
-            log.info(String.format("Ngrok-Server started. Listening on clients on port: %s", clientPort));
+            log.info("Ngrok-Server started. Listening on clients on port: {}", clientPort);
         } catch (
                 IOException e) {
-            log.error(String.format("Error opening server socket, probably port %s is busy", clientPort), e);
+            log.error("Error opening server socket, probably port {} is down", clientPort, e);
         }
     }
 
@@ -57,7 +57,7 @@ public class Server implements Runnable {
             try {
                 clientSocket = serverSocket.accept();
             } catch (IOException e) {
-                log.error(String.format("Error opening server socket, probably port %s is busy", clientPort), e);
+                log.error("Error opening server socket, probably port {} is down", clientPort, e);
             }
             executors.execute(new ClientHandler(clientSocket, clientConnections));
         }

@@ -27,7 +27,7 @@ public class ClientRunner {
         while (running) {
             try {
                 userRequest = HttpRequestSerializer.readFromInputStream(serverSocket.getInputStream());
-                log.info(String.format("Client received new user request: %s", userRequest.toString()));
+                log.info("Client received new user request: %s", userRequest.toString());
             } catch (IOException e) {
                 log.error("Error connecting to server", e);
                 running = false;
@@ -61,7 +61,7 @@ public class ClientRunner {
 
             if (serverReplyCode.equals("LINK")) {
                 String link = serverReply.split(" ")[1];
-                log.info(String.format("Link for user requests: http://localhost:%s -> %s", servicePort, link));
+                log.info("Link for user requests: http://localhost:{} -> {}", servicePort, link);
                 return true;
             }
             if (serverReplyCode.equals("ERROR")) {

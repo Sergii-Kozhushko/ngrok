@@ -37,12 +37,12 @@ public class UserController {
         String userUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
         Socket clientSocket = clientList.get(userUrl);
         if (clientSocket == null) {
-            log.warn(String.format("Link %s was not recognized by ngrok-server",  userUrl));
+            log.warn("Link {} was not recognized by ngrok-server",  userUrl);
             return ResponseEntity.badRequest().body(String.format("Link %s was not recognized by ngrok-server",
                     userUrl));
         }
         HttpRequest httpRequest = HttpRequestConverter.convert(request);
-        log.info(String.format("Server received user request: %s", httpRequest));
+        log.info("Server received user request: {}", httpRequest);
 
         try {
             HttpRequestSerializer.writeToOutputStream(httpRequest, clientSocket.getOutputStream());
