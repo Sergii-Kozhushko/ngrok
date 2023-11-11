@@ -2,10 +2,10 @@ package de.hellfish.ngrok.server;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,10 +15,9 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 @Getter
-@Setter
 @Component
 @RequiredArgsConstructor
-public class Server implements Runnable {
+public final class Server implements Runnable {
     @Value("${client.port}")
     private int clientPort;
     private final Map<String, Socket> clientConnections;
