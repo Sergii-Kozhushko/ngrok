@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 public class TestService {
+
     private static final int testServicePort = 2222;
     private static final int clientPort = 8082;
 

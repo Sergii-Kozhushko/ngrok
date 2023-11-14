@@ -18,11 +18,12 @@ import java.net.Socket;
 @RestController
 @RequiredArgsConstructor
 public class UserController {
+
     private final ClientConnectionService clientList;
 
     /**
      * Handles incoming user requests to proxy them to the appropriate service.
-     *
+     * <p>
      * This method is invoked for all requests with a path matching the pattern "/*" and is responsible for
      * forwarding the client request to the corresponding service. It retrieves the client's URL, looks up the
      * associated socket, and sends the HTTP request to the service via the socket.
@@ -37,7 +38,7 @@ public class UserController {
         String userUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
         Socket clientSocket = clientList.getClient(userUrl);
         if (clientSocket == null) {
-            log.warn("Link {} was not recognized by ngrok-server",  userUrl);
+            log.warn("Link {} was not recognized by ngrok-server", userUrl);
             return ResponseEntity.badRequest().body(String.format("Link %s was not recognized by ngrok-server",
                     userUrl));
         }

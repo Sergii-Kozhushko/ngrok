@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 @RequiredArgsConstructor
 public class ServerApplication implements CommandLineRunner {
+
     private final Server server;
 
     public static void main(String[] args) {

@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 @Component
 @RequiredArgsConstructor
 public final class Server implements Runnable {
+
     @Value("${ngrok.server.client-listening-port}")
     private int clientPort;
     @Value("${ngrok.server.max-client-threads}")

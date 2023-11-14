@@ -13,6 +13,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class ClientHandler implements Runnable {
+
     private final Socket clientSocket;
     private final ClientConnectionService clientList;
 

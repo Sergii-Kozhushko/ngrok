@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public final class ClientInitRequest {
+
     private final int port;
     private final String protocol;
 
