@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,7 +25,7 @@ public class ClientHandlerTest {
     @Mock
     private Socket clientSocket;
 
-    @Autowired
+    @MockBean
     private ClientConnectionService clientList;
 
     private ByteArrayOutputStream outputStream;
@@ -49,6 +49,6 @@ public class ClientHandlerTest {
         clientHandler.run();
         assertFalse(clientList.isEmpty());
         String response = outputStream.toString();
-        assertTrue(response.startsWith("LINK "), "Ответ сервера должен начинаться с 'LINK http://'");
+        assertTrue(response.startsWith("LINK "), "Server reply must start with 'LINK http://'");
     }
 }

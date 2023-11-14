@@ -3,6 +3,7 @@ package de.hellfish.ngrok.client;
 import de.hellfish.ngrok.utils.HttpRequest;
 import de.hellfish.ngrok.utils.HttpRequestSerializer;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,14 +38,14 @@ public class ClientRunner {
 
     private static int fetchServicePort(String[] args) {
         int servicePort = 0;
-            for (String arg : args) {
-                if (arg.contains("-port=")) {
-                    try {
-                        servicePort = Integer.parseInt(arg.substring(6));
-                    } catch (NumberFormatException ignored) {
-                    }
+        for (String arg : args) {
+            if (arg.contains("-port=")) {
+                try {
+                    servicePort = Integer.parseInt(arg.substring(6));
+                } catch (NumberFormatException ignored) {
                 }
             }
+        }
         return servicePort;
     }
 
