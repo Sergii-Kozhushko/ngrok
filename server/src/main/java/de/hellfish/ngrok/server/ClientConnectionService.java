@@ -1,14 +1,27 @@
 package de.hellfish.ngrok.server;
 
+import org.springframework.stereotype.Service;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
 
-public interface ClientConnectionService {
+@Service
+public class ClientConnectionService {
 
-    void addClient(String key, Socket socket);
+    private final ConcurrentHashMap<String, Socket> clientConnections = new ConcurrentHashMap<>();
 
-    Socket getClient(String key);
+    public void addClient(String key, Socket socket) {
+        clientConnections.put(key, socket);
+    }
 
-    void removeClient(String key);
+    public Socket getClient(String key) {
+        return clientConnections.get(key);
+    }
 
-    boolean isEmpty();
+    public void removeClient(String key) {
+        clientConnections.remove(key);
+    }
+
+    public boolean isEmpty() {
+        return clientConnections.isEmpty();
+    }
 }
