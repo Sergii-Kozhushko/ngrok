@@ -12,7 +12,6 @@ import java.io.OutputStream;
 
 public class HttpRequestSerializer {
 
-    private static JsonFactory jsonFactory;
     private static final ObjectMapper objectMapper;
 
     static {
