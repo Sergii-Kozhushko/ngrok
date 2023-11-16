@@ -37,13 +37,9 @@ public class NgrokClientTest {
                 try (Socket socket = testServerSocket.accept();
                      PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
                     out.println("LINK " + testLink);
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    Thread.sleep(2000);
                 }
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         }).start();
