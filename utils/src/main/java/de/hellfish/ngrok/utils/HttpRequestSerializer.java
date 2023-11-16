@@ -29,12 +29,12 @@ public class HttpRequestSerializer {
         }
     }
 
-    public static HttpRequest readFromInputStream(InputStream inputStream) {
+    public static HttpRequest readFromInputStream(InputStream inputStream) throws IOException {
         try {
             HttpRequest request = objectMapper.readValue(inputStream, HttpRequest.class);
             return request;
         } catch (IOException e) {
-            throw new RuntimeException("Can't read http-request socket: Server is not available", e);
+            throw new IOException("Can't read http-request socket: Server is not available", e);
         }
     }
 }

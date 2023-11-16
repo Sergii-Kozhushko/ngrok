@@ -63,18 +63,13 @@ public class NgrokClient implements Runnable {
         }
         running = initConnectionWithServer();
         while (running) {
-            try {
                 try {
                     HttpRequest userRequest = HttpRequestSerializer.readFromInputStream(serverSocket.getInputStream());
                     log.info("Client received new user request: {}", userRequest.toString());
-                } catch (RuntimeException e) {
+                } catch (IOException e) {
                     log.error("Server is down");
                     running = false;
                 }
-            } catch (IOException e) {
-                log.error("Error connecting to server", e);
-                running = false;
-            }
         }
         stop();
     }
