@@ -43,10 +43,7 @@ public class NgrokClient implements Runnable {
         try {
             servicePort = Integer.parseInt(args[1]);
         } catch (NumberFormatException ignored) {
-        }
-
-        if (servicePort == 0) {
-            log.error("Provide service port. Syntax: java NgrokClient <protocol> <port>");
+            log.error("Wrong service port provided. Syntax: java NgrokClient <protocol> <port>");
             return;
         }
         if (!serviceProtocol.equalsIgnoreCase("http")) {

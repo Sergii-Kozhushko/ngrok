@@ -1,5 +1,6 @@
 package de.hellfish.ngrok.client;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * this server and awaits a link message.
  * After server shutdown, Ngrok client catches Socket exception and interrupt its thread
  */
+@Slf4j
 public class NgrokClientTest {
 
     private ServerSocket testServerSocket;
@@ -40,7 +42,7 @@ public class NgrokClientTest {
                     Thread.sleep(2000);
                 }
             } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+                log.error("Error connecting to ngrok-server", e);
             }
         }).start();
         Thread.sleep(1000);
