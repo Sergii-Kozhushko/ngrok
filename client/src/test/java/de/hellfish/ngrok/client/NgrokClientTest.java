@@ -28,7 +28,7 @@ public class NgrokClientTest {
     private ServerSocket testServerSocket;
     private NgrokClient client;
     private final int testPort = 8082;
-    private String testLink = "http://w56h.myngrok.com";
+    private final String testLink = "http://w56h.myngrok.com";
 
     @BeforeEach
     public void setup() throws IOException, InterruptedException {
@@ -41,8 +41,11 @@ public class NgrokClientTest {
                     out.println("LINK " + testLink);
                     Thread.sleep(2000);
                 }
-            } catch (IOException | InterruptedException e) {
-                log.error("Error connecting to ngrok-server", e);
+            } catch (IOException e) {
+                log.error("Error connecting to ngrok-client from test server", e);
+            } catch (InterruptedException e) {
+                log.error("Test server thread was interrupted", e);
+
             }
         }).start();
         Thread.sleep(1000);
@@ -51,17 +54,25 @@ public class NgrokClientTest {
     }
 
     @Test
-    public void testClientServerInteraction() throws InterruptedException {
+    public void testClientServerInteraction(){
         Thread clientThread = new Thread(client);
         clientThread.start();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            log.error("Client thread was interrupted", e);
+        }
         assertEquals(testLink, client.getLinkFromServer());
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
-        if (testServerSocket != null && !testServerSocket.isClosed()) {
-            testServerSocket.close();
+    public void closeServerSocket() {
+        try {
+            if (testServerSocket != null && !testServerSocket.isClosed()) {
+                testServerSocket.close();
+            }
+        } catch (IOException e) {
+            log.error("Error closing test server socket", e);
         }
     }
 }

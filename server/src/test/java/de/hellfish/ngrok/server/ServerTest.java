@@ -1,5 +1,6 @@
 package de.hellfish.ngrok.server;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Slf4j
 @SpringBootTest
 @TestPropertySource(properties = {"client.port=8080"})
 public class ServerTest {
@@ -33,7 +35,7 @@ public class ServerTest {
         try (Socket client = new Socket("localhost", 8080)) {
             assertTrue(client.isConnected());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error creating test client socket", e);
         }
     }
 
