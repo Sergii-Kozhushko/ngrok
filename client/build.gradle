@@ -1,16 +1,10 @@
 plugins {
-    id 'java'
-}
 
-java {
-    sourceCompatibility = '17'
 }
 
 dependencies {
     implementation project(path: ':utils')
     implementation 'org.projectlombok:lombok:1.18.26'
-    compileOnly 'org.projectlombok:lombok:1.18.26'
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
     testCompileOnly 'org.projectlombok:lombok:1.18.26'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
     implementation 'org.slf4j:slf4j-api:2.0.9'

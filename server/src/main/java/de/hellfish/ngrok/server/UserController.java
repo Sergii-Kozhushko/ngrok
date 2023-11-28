@@ -1,18 +1,18 @@
 package de.hellfish.ngrok.server;
 
-import de.hellfish.ngrok.utils.HttpRequest;
-import de.hellfish.ngrok.utils.HttpRequestConverter;
-import de.hellfish.ngrok.utils.HttpRequestSerializer;
+import de.hellfish.ngrok.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -32,7 +32,7 @@ public class UserController {
      * @param request The HttpServletRequest representing the incoming client request.
      * @return A ResponseEntity with the appropriate HTTP status code and response body from service.
      */
-    @GetMapping("/**")
+    @RequestMapping("/**")
     public ResponseEntity<String> userRequests(HttpServletRequest request) {
 
         String userUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
@@ -47,10 +47,26 @@ public class UserController {
 
         try {
             HttpRequestSerializer.writeToOutputStream(httpRequest, clientSocket.getOutputStream());
+            SerializableHttpResponse response = HttpResponseSerializer.readFromInputStream(clientSocket.getInputStream());
+            return convertToResponseEntity(response);
         } catch (IOException e) {
             log.error("Error connection to client", e);
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Error connection to client");
         }
-        return ResponseEntity.ok().build();
+    }
+
+    private static ResponseEntity<String> convertToResponseEntity(SerializableHttpResponse serializedResponse) {
+        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(serializedResponse.getStatusCode());
+        if (serializedResponse.getHeaders() != null) {
+            for (Map.Entry<String, List<String>> entry : serializedResponse.getHeaders().entrySet()) {
+                List<String> headerValues = entry.getValue();
+                if (headerValues != null) {
+                    for (String value : headerValues) {
+                        responseBuilder.header(entry.getKey(), value);
+                    }
+                }
+            }
+        }
+        return responseBuilder.body(serializedResponse.getBody());
     }
 }
