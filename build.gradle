@@ -1,8 +1,16 @@
 plugins {
     id 'java'
+
 }
 
 subprojects {
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+
+    checkstyle {
+        toolVersion = '10.7.0'
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+    }
 
 }
 allprojects {
@@ -14,4 +22,3 @@ allprojects {
         mavenCentral()
     }
 }
-

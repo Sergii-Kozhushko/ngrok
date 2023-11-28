@@ -8,24 +8,30 @@ import lombok.ToString;
 
 import java.util.Map;
 
-
 @Getter
 @ToString
 @EqualsAndHashCode
 public final class HttpRequest {
+
     private final Map<String, String> headers;
     private final String method;
-    private final String url;
+    private final String server; //sub1.localhost
+    private final int port; // 9000
+    private final String uri;
     private final byte[] body;
 
     @JsonCreator
-    public HttpRequest(@JsonProperty("headers")Map<String, String> headers,
+    public HttpRequest(@JsonProperty("headers") Map<String, String> headers,
                        @JsonProperty("method") String method,
-                       @JsonProperty("url") String url,
+                       @JsonProperty("server") String server,
+                       @JsonProperty("port") int port,
+                       @JsonProperty("uri") String uri,
                        @JsonProperty("body") byte[] body) {
         this.headers = headers;
         this.method = method;
-        this.url = url;
+        this.server = server;
+        this.port = port;
+        this.uri = uri;
         this.body = body;
     }
 }

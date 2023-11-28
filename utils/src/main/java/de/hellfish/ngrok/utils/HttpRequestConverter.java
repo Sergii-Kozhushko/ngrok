@@ -4,9 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class HttpRequestConverter {
 
@@ -26,7 +24,7 @@ public class HttpRequestConverter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new HttpRequest(headers, request.getMethod(),
-                request.getRequestURI(), body);
+        return new HttpRequest(headers, request.getMethod(), request.getServerName(),
+                request.getServerPort(), request.getRequestURI(), body);
     }
 }

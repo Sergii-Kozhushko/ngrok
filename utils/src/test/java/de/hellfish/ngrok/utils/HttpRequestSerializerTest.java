@@ -17,7 +17,8 @@ class HttpRequestSerializerTest {
         // given
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        HttpRequest request = new HttpRequest(headers, "GET", "/example", "Hello, World!".getBytes());
+        HttpRequest request = new HttpRequest(headers, "GET",
+                "sub1.localhost", 9000, "/example", "Hello, World!".getBytes());
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         HttpRequestSerializer.writeToOutputStream(request, outputStream);
@@ -28,4 +29,5 @@ class HttpRequestSerializerTest {
         // then
         assertEquals(request, deserializedRequest);
     }
+
 }

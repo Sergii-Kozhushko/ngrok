@@ -1,0 +1,45 @@
+name: pull-request
+on:
+  push:
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: oracle
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build Gradle Project
+        run: ./gradlew build -x test
+
+      - name: Run Tests
+        run: ./gradlew test
+
+      - name: Run Checkstyle
+        run: |
+          # Setting up Checkstyle
+          curl -o checkstyle.jar -L https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.4/checkstyle-10.12.4-all.jar
+          
+          # Running Checkstyle
+          java -jar checkstyle.jar -c config/checkstyle/checkstyle.xml client/src/ || true
+          java -jar checkstyle.jar -c config/checkstyle/checkstyle.xml server/src/ || true
+          java -jar checkstyle.jar -c config/checkstyle/checkstyle.xml utils/src/ || true
+
+        continue-on-error: true
+
+      - name: Checkstyle Summary
+        run: |
+          # Outputs a summary message of the check results
+          if [ -f checkstyle-result.xml ]; then
+          echo "checkstyle=$(grep -c '<error' checkstyle-result.xml) errors found" >> $GITHUB_ENV
+          else
+          echo "checkstyle=0 errors found" >> $GITHUB_ENV
+          fi
