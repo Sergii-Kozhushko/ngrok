@@ -74,7 +74,7 @@ class HttpRequestConverterTest {
         });
         when(mockRequest.getMethod()).thenReturn("GET");
         when(mockRequest.getRequestURI()).thenReturn("/test-uri");
-        HttpRequest httpRequest = HttpRequestConverter.convert(mockRequest);
+        HttpRequest httpRequest = HttpRequestConverter.convertServletToNgrok(mockRequest);
 
         // then
         assertEquals(expectedHeaders, httpRequest.getHeaders());
