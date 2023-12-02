@@ -42,7 +42,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(String.format("Link %s was not recognized by ngrok-server",
                     userUrl));
         }
-        HttpRequest httpRequest = HttpRequestConverter.convert(request);
+        HttpRequest httpRequest = HttpRequestConverter.convertServletToNgrok(request);
         log.info("Server received user request: {}", httpRequest);
 
         try {

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HttpRequestSerializerTest {
 
     @Test
-    void testWriteToOutputStreamReadFromInputStream() throws IOException {
+    void shouldCorrectlySerializeAndDeserializeHttpRequest() throws IOException {
         // given
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");

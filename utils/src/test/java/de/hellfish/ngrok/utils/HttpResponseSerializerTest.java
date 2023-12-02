@@ -11,11 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HttpResponseSerializerTest {
 
     @Test
-    void writeToOutputStream() {
-    }
-
-    @Test
-    void testWriteToOutputStreamReadFromInputStream() throws IOException {
+    void shouldCorrectlySerializeAndDeserializeHttpResponse() throws IOException {
         // given
         SerializableHttpResponse initialResponse = new SerializableHttpResponse(200, "Body");
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

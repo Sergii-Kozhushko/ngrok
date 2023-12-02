@@ -1,5 +1,6 @@
 package de.hellfish.ngrok.client;
 
+import de.hellfish.ngrok.utils.HttpRequestConverter;
 import de.hellfish.ngrok.utils.HttpRequestSerializer;
 import de.hellfish.ngrok.utils.HttpResponseSerializer;
 import de.hellfish.ngrok.utils.SerializableHttpResponse;
@@ -12,13 +13,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Client for interacting with an ngrok server.
@@ -30,7 +28,7 @@ import java.util.Map;
  * Usage:
  * Run in command line: java NgrokClient http 8080
  * <p>
- * On initialization, the client attempts to connect to the ngrok server at specified protocol
+ * During initialization, the client attempts to connect to the ngrok server at specified protocol
  * and port.
  */
 @Slf4j
@@ -48,6 +46,7 @@ public class NgrokClient implements Runnable {
     private String linkFromServer;
     private boolean running;
     private Socket serviceSocket;
+    private HttpClient httpClient;
     private static final List<String> REQUEST_RESTRICTED_HEADERS = List.of(
             "content-length", "host", "connection", "upgrade");
     private de.hellfish.ngrok.utils.HttpRequest userRequest;
@@ -104,12 +103,15 @@ public class NgrokClient implements Runnable {
         HttpResponse<String> serviceResponse = null;
         try {
             serviceSocket = new Socket("localhost", servicePort);
-            HttpClient httpClient = HttpClient.newHttpClient();
-            serviceResponse = httpClient.send(convertHttpRequest(userRequest), HttpResponse.BodyHandlers.ofString());
+            serviceResponse = httpClient.send(
+                    HttpRequestConverter.convertNgrokToJava(userRequest, serviceProtocol, servicePort),
+                    HttpResponse.BodyHandlers.ofString());
             log.info("Client got response from service: {} with body {}", serviceResponse, serviceResponse.body());
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.error("Error sending http-request to service", e);
             sendResponse503ToServer();
+        } catch (InterruptedException e) {
+            log.error("Thread, which sends request to service, was interrupted");
         }
 
         if (serviceResponse == null) {
@@ -135,6 +137,7 @@ public class NgrokClient implements Runnable {
     }
 
     private boolean start() {
+        httpClient = HttpClient.newHttpClient();
         try {
             serverSocket = new Socket(serverHost, serverPort);
             serverOut = new PrintWriter(serverSocket.getOutputStream());
@@ -158,18 +161,6 @@ public class NgrokClient implements Runnable {
         } catch (IOException e) {
             log.error("Error closing socket", e);
         }
-    }
-
-    private HttpRequest convertHttpRequest(de.hellfish.ngrok.utils.HttpRequest inputRequest) {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(serviceProtocol + "://" + "localhost" + ":" + servicePort + inputRequest.getUri()))
-                .method(inputRequest.getMethod(), HttpRequest.BodyPublishers.ofByteArray(inputRequest.getBody()));
-        for (Map.Entry<String, String> header : inputRequest.getHeaders().entrySet()) {
-            if (!REQUEST_RESTRICTED_HEADERS.contains(header.getKey().toLowerCase())) {
-                requestBuilder.header(header.getKey(), header.getValue());
-            }
-        }
-        return requestBuilder.build();
     }
 
     private boolean initConnectionWithServer() {
